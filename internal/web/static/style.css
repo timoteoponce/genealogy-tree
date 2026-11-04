@@ -125,3 +125,25 @@ button:hover, .btn:hover { background: var(--accent-dark); text-decoration: none
 /* plain text tree fallback (view=list) */
 .treelist { list-style: none; padding: 0; }
 .treelist li { padding: .2rem 0; border-bottom: 1px dotted var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* edit forms */
+.formbox {
+  max-width: 34rem; padding: 1.2rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+}
+.formbox label { display: block; font-weight: 600; margin: .7rem 0 .1rem; }
+.formbox input, .formbox select, .formbox textarea {
+  width: 100%; padding: .45rem; font: inherit;
+}
+.formbox input.short { width: 7rem; display: inline-block; }
+.partnergrid { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.pbox { flex: 1; min-width: 15rem; padding: .8rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.attachform label { display: flex; align-items: center; gap: .4rem; }
+button.danger, .danger { background: var(--danger); }
+.formbox h2, .formbox h3 { margin: .8rem 0 .2rem; }
+.dangerform {
+  margin-top: 2rem; padding: .7rem 1rem; background: #fbeeee;
+  border: 1px solid #eccaca; border-radius: 10px;
+  display: flex; gap: 1rem; align-items: center;
+}
+label.inline { display: inline-flex; gap: .4rem; align-items: center; font-weight: 400; }

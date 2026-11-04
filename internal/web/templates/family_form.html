@@ -1,0 +1,115 @@
+{{template "header" .}}
+<section>
+  <h1>Edit family</h1>
+
+  <div class="partnergrid">
+    <div class="pbox">
+      <h2>Partner 1</h2>
+      {{if .Partner1Filled}}
+      <p><a href="/person/{{.Partner1.ID}}"><b>{{.Partner1.DisplayName}}</b></a> <span class="muted">{{.Partner1.Years}}</span></p>
+      <form method="post" action="/family/{{.Family.ID}}/partner/detach" class="inline">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <input type="hidden" name="slot" value="1">
+        <button class="linklike small" type="submit">detach</button>
+      </form>
+      {{else}}
+      <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <input type="hidden" name="slot" value="1">
+        <label>Attach person # <input name="person_id" class="short"></label>
+        <button class="small" type="submit">Attach</button>
+      </form>
+      {{end}}
+    </div>
+
+    <div class="pbox">
+      <h2>Partner 2</h2>
+      {{if .Partner2Filled}}
+      <p><a href="/person/{{.Partner2.ID}}"><b>{{.Partner2.DisplayName}}</b></a> <span class="muted">{{.Partner2.Years}}</span></p>
+      <form method="post" action="/family/{{.Family.ID}}/partner/detach" class="inline">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <input type="hidden" name="slot" value="2">
+        <button class="linklike small" type="submit">detach</button>
+      </form>
+      {{else}}
+      <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <input type="hidden" name="slot" value="2">
+        <label>Attach person # <input name="person_id" class="short"></label>
+        <button class="small" type="submit">Attach</button>
+      </form>
+      {{end}}
+    </div>
+  </div>
+
+  <form method="post" action="/family/{{.Family.ID}}/edit" class="formbox">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="partner1_id" value="{{with .Partner1}}{{.ID}}{{end}}">
+    <input type="hidden" name="partner2_id" value="{{with .Partner2}}{{.ID}}{{end}}">
+
+    <h2>Details</h2>
+    <label>Status
+      <select name="status">
+        {{range .StatusOptions}}
+        <option value="{{index . 0}}"{{if eq $.Family.Status (index . 0)}} selected{{end}}>{{index . 1}}</option>
+        {{end}}
+      </select>
+    </label>
+    <label>Marriage — date or year
+      <input name="marriage_date" value="{{.Family.MarriageDate}}">
+    </label>
+    <label>Marriage — place
+      <input name="marriage_place" value="{{.Family.MarriagePlace}}">
+    </label>
+    <label>Notes
+      <textarea name="notes" rows="3">{{.Family.Notes}}</textarea>
+    </label>
+    <button type="submit">Save family</button>
+  </form>
+
+  <h2>Children ({{len .Children}})</h2>
+  {{if .Children}}
+  <ul class="relativelist">
+    {{range .Children}}
+    <li>
+      <a href="/person/{{.ID}}"><b>{{.DisplayName}}</b></a> <span class="muted">{{.Years}}</span>
+      <form method="post" action="/family/{{$.Family.ID}}/children/remove" class="inline">
+        <input type="hidden" name="csrf" value="{{$.CSRF}}">
+        <input type="hidden" name="person_id" value="{{.ID}}">
+        <button class="linklike small" type="submit">unlink</button>
+      </form>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="muted">No children linked yet.</p>
+  {{end}}
+
+  <form method="post" action="/family/{{.Family.ID}}/children/add" class="formbox childform">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>Link existing child — person #
+      <input name="person_id" class="short">
+    </label>
+    <h3>…or create a new child</h3>
+    <label>First names <input name="child_given"></label>
+    <label>Surname <input name="child_surname" value="{{with .Partner1}}{{.Surname}}{{end}}"></label>
+    <label>Birth (year or date) <input name="child_birth"></label>
+    <label>Link type
+      <select name="relationship">
+        <option value="birth">Biological child</option>
+        <option value="adopted">Adopted child</option>
+        <option value="foster">Foster child</option>
+      </select>
+    </label>
+    <button type="submit">Add child</button>
+  </form>
+
+  {{if .CanAdmin}}
+  <form method="post" action="/family/{{.Family.ID}}/delete" class="dangerform">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label class="inline"><input type="checkbox" name="confirm" value="yes"> I am sure</label>
+    <button class="danger small" type="submit">Delete family</button>
+  </form>
+  {{end}}
+</section>
+{{template "footer" .}}

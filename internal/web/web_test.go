@@ -22,9 +22,11 @@ import (
 )
 
 type env struct {
-	ts    *httptest.Server
-	admin *http.Client // logged-in admin
-	jar   *cookiejar.Jar
+	ts     *httptest.Server
+	admin  *http.Client // logged-in admin (admin role)
+	viewer *http.Client // logged-in viewer (viewer role)
+	St     *store.Store
+	jar    *cookiejar.Jar
 }
 
 // newEnv boots an in-memory server with one admin, one viewer and the
@@ -61,8 +63,9 @@ func newEnv(t *testing.T, gedcomFile string) *env {
 	ts := httptest.NewServer(srv.Router())
 	t.Cleanup(ts.Close)
 
-	e := &env{ts: ts}
+	e := &env{ts: ts, St: st}
 	e.admin = e.clientWithLogin(t, "admin", "pw-admin")
+	e.viewer = e.clientWithLogin(t, "viewer", "pw-admin")
 	return e
 }
 

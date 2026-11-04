@@ -1,0 +1,55 @@
+{{template "header" .}}
+<section class="loginbox formbox">
+  <h1>{{.RelLabel}}{{if .OfID}} — for {{.Of.DisplayName}}{{else}}{{if .P.ID}}Edit person{{else}}New person{{end}}{{end}}</h1>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <form method="post" action="{{.Action}}">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    {{if .OfID}}<input type="hidden" name="of" value="{{.OfID}}">{{end}}
+    {{if .Rel}}<input type="hidden" name="relationship" value="{{.Rel}}">{{end}}
+
+    <label>First names
+      <input name="given_names" value="{{with .P}}{{.GivenNames}}{{end}}" autofocus required>
+    </label>
+    <label>Surname
+      <input name="surname" value="{{with .P}}{{.Surname}}{{end}}">
+    </label>
+    <label>Married name <span class="muted">(optional)</span>
+      <input name="married_name" value="{{with .P}}{{.MarriedName}}{{end}}">
+    </label>
+    <label>Nickname <span class="muted">(optional)</span>
+      <input name="nickname" value="{{with .P}}{{.Nickname}}{{end}}">
+    </label>
+    <label>Sex
+      <select name="sex">
+        {{range .SexOptions}}
+        <option value="{{index . 0}}"{{if eq $.Sex (index . 0)}} selected{{end}}>{{index . 1}}</option>
+        {{end}}
+      </select>
+    </label>
+    <label>Birth — date or year <span class="muted">e.g. "1847", "ABT 1850", "MAY 1901"</span>
+      <input name="birth_date" value="{{with .P}}{{.BirthDate}}{{end}}">
+    </label>
+    <label>Birth — place
+      <input name="birth_place" value="{{with .P}}{{.BirthPlace}}{{end}}">
+    </label>
+    <label>Death — date or year <span class="muted">leave empty for living people</span>
+      <input name="death_date" value="{{with .P}}{{.DeathDate}}{{end}}">
+    </label>
+    <label>Death — place
+      <input name="death_place" value="{{with .P}}{{.DeathPlace}}{{end}}">
+    </label>
+    <label>Notes
+      <textarea name="notes" rows="4">{{with .P}}{{.Notes}}{{end}}</textarea>
+    </label>
+    <button type="submit">Save</button>
+  </form>
+
+  {{if and .CanAdmin (eq .Mode "edit")}}
+  <form method="post" action="/person/{{.P.ID}}/delete" class="dangerform">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label class="inline"><input type="checkbox" name="confirm" value="yes"> I am sure — this permanently deletes the person</label>
+    <button class="danger small" type="submit">Delete person</button>
+  </form>
+  {{end}}
+</section>
+{{template "footer" .}}

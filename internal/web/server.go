@@ -72,20 +72,30 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /person/{id}/tree", s.wrap("viewer", s.treePage))
 	mux.HandleFunc("GET /tree.json", s.wrap("viewer", s.treeData))
 
-	// Editor forms arrive in stage M6; admin web UI in stage M8. The paths
-	// already exist so links stay valid.
-	mux.HandleFunc("GET /person/{id}/edit", s.notImplemented)
-	mux.HandleFunc("GET /family/{id}/edit", s.notImplemented)
+	// Editor forms (M6): person/family editing + guided add-relative flows.
+	// Deleting people/families is admin-only.
+	mux.HandleFunc("GET /person/new", s.wrap("editor", s.personNewPage))
+	mux.HandleFunc("POST /person/new", s.wrap("editor", s.personCreate))
+	mux.HandleFunc("GET /person/{id}/edit", s.wrap("editor", s.personEditPage))
+	mux.HandleFunc("POST /person/{id}/edit", s.wrap("editor", s.personUpdate))
+	mux.HandleFunc("POST /person/{id}/delete", s.wrap("admin", s.personDelete))
+	mux.HandleFunc("GET /family/add", s.wrap("editor", s.familyAddParents))
+	mux.HandleFunc("POST /family/add", s.wrap("editor", s.familyAddParents))
+	mux.HandleFunc("GET /family/new", s.wrap("editor", s.familyNew))
+	mux.HandleFunc("POST /family/new", s.wrap("editor", s.familyNew))
+	mux.HandleFunc("GET /family/{id}/edit", s.wrap("editor", s.familyEditPage))
+	mux.HandleFunc("POST /family/{id}/edit", s.wrap("editor", s.familyUpdate))
+	mux.HandleFunc("POST /family/{id}/delete", s.wrap("admin", s.familyDelete))
+	mux.HandleFunc("POST /family/{id}/partner/attach", s.wrap("editor", s.familyAttachPartner))
+	mux.HandleFunc("POST /family/{id}/partner/detach", s.wrap("editor", s.familyDetachPartner))
+	mux.HandleFunc("POST /family/{id}/children/add", s.wrap("editor", s.familyAddChild))
+	mux.HandleFunc("POST /family/{id}/children/remove", s.wrap("editor", s.familyRemoveChild))
 
 	return mux
 }
 
 func (s *Server) wrap(minRole string, h http.HandlerFunc) http.HandlerFunc {
 	return s.Auth.Wrap(minRole, h)
-}
-
-func (s *Server) notImplemented(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "coming soon", http.StatusNotImplemented)
 }
 
 // -- template data ----------------------------------------------------------

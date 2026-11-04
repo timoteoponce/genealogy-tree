@@ -9,7 +9,8 @@
       <div class="actionrow">
         <a class="btn" href="/person/{{.Person.ID}}/edit">Edit</a>
         <a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a>
-        <a class="btn" href="/family/add?child={{.Person.ID}}">Add parents</a>
+        {{if not .Parents}}<a class="btn" href="/family/add?child={{.Person.ID}}">Add parents</a>{{end}}
+        <a class="btn" href="/family/new?partner={{.Person.ID}}">Add spouse</a>
       </div>
       {{else}}
       <div class="actionrow"><a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a></div>

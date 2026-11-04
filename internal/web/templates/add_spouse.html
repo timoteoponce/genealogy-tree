@@ -1,0 +1,31 @@
+{{template "header" .}}
+<section class="loginbox formbox">
+  <h1>Add spouse of {{.Partner.DisplayName}}</h1>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <form method="post" action="/family/new">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="partner" value="{{.Partner.ID}}">
+
+    <label>Existing person ID <span class="muted">(search in People list, optional)</span>
+      <input name="spouse_person" inputmode="numeric" placeholder="person #">
+    </label>
+
+    <h2>…or create a new spouse</h2>
+    <label>First names <input name="spouse_given"></label>
+    <label>Surname <input name="spouse_surname" value="{{with .Partner}}{{.Surname}}{{end}}"></label>
+    <label>Sex
+      <select name="spouse_sex">
+        <option value="">Auto (opposite of {{.Partner.DisplayName}})</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+      </select>
+    </label>
+    <label>Birth (year or date) <input name="spouse_birth"></label>
+
+    <h2>Marriage</h2>
+    <label>Date or year <input name="marriage_date" placeholder='e.g. "2011-05-14", "ABT 1949"'></label>
+    <label>Place <input name="marriage_place"></label>
+    <button type="submit">Create family</button>
+  </form>
+</section>
+{{template "footer" .}}

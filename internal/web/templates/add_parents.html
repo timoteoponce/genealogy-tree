@@ -1,0 +1,37 @@
+{{template "header" .}}
+<section class="loginbox formbox">
+  <h1>Add parents of {{.Child.DisplayName}}</h1>
+  <p class="muted">Leaving a parent empty skips them.</p>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <form method="post" action="/family/add">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="child" value="{{.ChildID}}">
+
+    <h2>Father</h2>
+    <label>First names <input name="father_given"></label>
+    <label>Surname <input name="father_surname" value="{{with .Child}}{{.Surname}}{{end}}"></label>
+    <label>Birth (year or date) <input name="father_birth" placeholder="e.g. 1920"></label>
+
+    <h2>Mother</h2>
+    <label>First names <input name="mother_given"></label>
+    <label>Surname <input name="mother_surname"></label>
+    <label>Birth (year or date) <input name="mother_birth" placeholder="e.g. 1924"></label>
+
+    <h2>Family</h2>
+    <label>Marriage — date or year
+      <input name="marriage_date" placeholder='e.g. "1948", "ABT 1949"'>
+    </label>
+    <label>Marriage — place
+      <input name="marriage_place">
+    </label>
+    <label>Child link type
+      <select name="relationship">
+        <option value="birth">Biological child</option>
+        <option value="adopted">Adopted child</option>
+        <option value="foster">Foster child</option>
+      </select>
+    </label>
+    <button type="submit">Create family</button>
+  </form>
+</section>
+{{template "footer" .}}
