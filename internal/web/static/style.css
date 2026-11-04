@@ -1,0 +1,112 @@
+/* genealogy-tree — single stylesheet, no other CSS needed */
+:root {
+  --bg: #f6f4ef;
+  --card: #ffffff;
+  --ink: #2c2a26;
+  --muted: #8a8577;
+  --accent: #3f7d4e;
+  --accent-dark: #2f5e3b;
+  --line: #e3ded4;
+  --danger: #b0413e;
+}
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+a { color: var(--accent-dark); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.topnav {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .6rem 1rem;
+  background: #34473a; color: #fff;
+  flex-wrap: wrap;
+}
+.topnav a { color: #eae6db; }
+.brand { font-weight: 700; font-size: 1.05rem; margin-right: .5rem; }
+.navlinks { display: flex; align-items: center; gap: .9rem; }
+.navlinks:last-child { margin-left: auto; }
+.userchip em {
+  font-style: normal; font-size: .72rem; text-transform: uppercase;
+  background: #ffffff22; padding: .1rem .4rem; border-radius: 4px; margin-left: .3rem;
+}
+.linklike {
+  background: none; border: none; color: inherit; cursor: pointer;
+  font: inherit; padding: 0;
+}
+form.inline { display: inline; }
+.container { max-width: 1100px; margin: 1.2rem auto; padding: 0 1rem; }
+.sitefooter {
+  text-align: center; color: var(--muted); font-size: .8rem;
+  padding: 2rem 0 1rem;
+}
+
+h1 { font-size: 1.4rem; margin: .2rem 0 .8rem; }
+h2 { font-size: 1.02rem; color: var(--accent-dark); margin: 1.1rem 0 .4rem; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.error { color: var(--danger); }
+
+/* login */
+.loginbox {
+  max-width: 20rem; margin: 4rem auto; padding: 1.4rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+}
+.loginbox label { display: block; margin-bottom: .8rem; font-weight: 600; }
+.loginbox input { width: 100%; padding: .5rem; margin-top: .25rem; }
+button, .btn {
+  display: inline-block; background: var(--accent); color: #fff; border: none;
+  padding: .45rem .9rem; border-radius: 7px; cursor: pointer; font: inherit;
+  text-decoration: none;
+}
+button:hover, .btn:hover { background: var(--accent-dark); text-decoration: none; }
+
+/* dashboard */
+.stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.statcard {
+  flex: 1; min-width: 8rem; text-align: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: .9rem;
+}
+.statcard b { display: block; font-size: 1.7rem; color: var(--accent-dark); }
+.statcard span { color: var(--muted); }
+
+/* people list */
+.searchrow { display: flex; gap: .5rem; margin-bottom: .9rem; }
+.searchrow input { flex: 1; max-width: 24rem; padding: .45rem; }
+.peopletable { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; }
+.peopletable th, .peopletable td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); }
+.peopletable th { font-size: .8rem; color: var(--muted); text-transform: uppercase; }
+.avatarcell img, .avatarlink img {
+  border-radius: 50%; object-fit: cover; background: #dedbd3;
+  vertical-align: middle;
+}
+.pager { margin: .8rem 0; display: flex; gap: 1rem; align-items: center; }
+.badge {
+  display: inline-block; font-size: .7rem; padding: .05rem .4rem;
+  border-radius: 999px; background: #ece7db; color: #6b6555;
+}
+.badge.living { background: #e7f0e5; color: var(--accent-dark); }
+
+/* person page */
+.personhead { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1rem; }
+.portrait { border-radius: 12px; object-fit: cover; background: #dedbd3; }
+.pheadinfo h1 { margin: 0; }
+.actionrow { display: flex; gap: .5rem; margin-top: .5rem; flex-wrap: wrap; }
+.personcols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 700px) { .personcols { grid-template-columns: 1fr; } }
+.facttable { width: 100%; border-collapse: collapse; background: var(--card); }
+.facttable th { text-align: left; color: var(--accent-dark); width: 7rem; padding: .3rem .4rem; border-bottom: 1px solid var(--line); }
+.facttable td { padding: .3rem .4rem; border-bottom: 1px solid var(--line); }
+.relativelist { list-style: none; padding: 0; margin: .2rem 0; }
+.relativelist li { padding: .25rem 0; border-bottom: 1px dotted var(--line); }
+.notes { white-space: pre-wrap; font-family: inherit; margin: .2rem 0; }
+.sourcelist { padding-left: 1.1rem; }
+
+/* error page */
+.errorpage { text-align: center; padding: 4rem 0; }
+.errorpage h1 { font-size: 3rem; color: var(--accent-dark); margin: 0; }

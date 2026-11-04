@@ -1,0 +1,49 @@
+{{template "header" .}}
+<section class="personhead">
+  <img class="portrait" src="/media/{{.PhotoID}}/thumb" alt="" width="64" height="64">
+  <div class="pheadinfo">
+    <h1><a href="/person/{{.Person.ID}}">{{.Person.DisplayName}}</a></h1>
+    <p class="muted">Tree centered on this person</p>
+    <div class="actionrow">
+      {{range $g := .GensChoices}}
+        {{if eq $g $.Gens}}<span class="badge">{{$g}} generations</span>
+        {{else}}<a class="small" href="/person/{{$.Person.ID}}/tree?gens={{$g}}">{{$g}} generations</a>{{end}}
+      {{end}}
+    </div>
+  </div>
+</section>
+
+<div class="personcols">
+  <div class="col">
+    <h2>Ancestors</h2>
+    {{if .Ancestors}}
+    <ul class="treelist">
+      {{range .Ancestors}}
+      <li style="margin-left: {{.Depth}}rem;">
+        <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a> <span class="muted">{{.Person.Years}}</span>
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="muted">No recorded parents.</p>
+    {{end}}
+  </div>
+
+  <div class="col">
+    <h2>Descendants</h2>
+    {{if .Descendants}}
+    <ul class="treelist">
+      {{range .Descendants}}
+      <li style="margin-left: {{.Depth}}rem;">
+        <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a> <span class="muted">{{.Person.Years}}</span>
+        {{with .Spouse}} ⚭ {{template "personlink-inline" .}}{{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="muted">No recorded children.</p>
+    {{end}}
+  </div>
+</div>
+
+{{template "footer" .}}

@@ -12,6 +12,8 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -34,6 +36,11 @@ const dsnPragmas = "?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_pragm
 // Open opens (creating if needed) the database at path and applies
 // pending migrations. Callers must Close.
 func Open(path string) (*sql.DB, error) {
+	if dir := filepath.Dir(path); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return nil, fmt.Errorf("create data dir %s: %w", dir, err)
+		}
+	}
 	d, err := sql.Open("sqlite", "file:"+path+dsnPragmas)
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)

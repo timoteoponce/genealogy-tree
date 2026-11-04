@@ -29,6 +29,7 @@ import (
 	"genealogy-tree/internal/db"
 	"genealogy-tree/internal/gedcom"
 	"genealogy-tree/internal/store"
+	"genealogy-tree/internal/web"
 )
 
 // buildVersion is set with -ldflags at build time.
@@ -158,15 +159,20 @@ func runServe() error {
 		return fmt.Errorf("create data dir %s: %w", cfg.DataDir, err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintln(w, "ok")
-	})
+	d, err := db.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+
+	webServer, err := web.NewServer(cfg, store.New(d))
+	if err != nil {
+		return err
+	}
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
-		Handler:           mux,
+		Handler:           webServer.Router(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

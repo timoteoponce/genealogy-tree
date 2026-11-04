@@ -33,6 +33,13 @@ RETURNING id`,
 	return id, nil
 }
 
+// CountSources returns the number of imported sources.
+func (q *Queries) CountSources(ctx context.Context) (int64, error) {
+	var n int64
+	err := q.DB.QueryRowContext(ctx, `SELECT count(*) FROM sources`).Scan(&n)
+	return n, err
+}
+
 // ListSources returns all imported sources.
 func (q *Queries) ListSources(ctx context.Context) ([]models.Source, error) {
 	rows, err := q.DB.QueryContext(ctx,

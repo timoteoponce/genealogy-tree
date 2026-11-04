@@ -1,0 +1,32 @@
+{{template "header" .}}
+<section>
+  <h1>People <span class="muted">({{.Total}})</span></h1>
+  <form method="get" action="/people" class="searchrow">
+    <input name="q" value="{{.Query}}" placeholder="Search by name…" autofocus>
+    <button type="submit">Search</button>
+    {{with .Query}}<a class="linklike" href="/people">Clear</a>{{end}}
+  </form>
+
+  {{if .People}}
+  <table class="peopletable">
+    <tr><th></th><th>Name</th><th>Born</th><th>Died</th><th></th></tr>
+    {{range .People}}
+    <tr>
+      <td class="avatarcell"><img src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="40" height="40"></td>
+      <td><a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a></td>
+      <td>{{with .Person.BirthYear}}{{.}}{{end}} <span class="muted">{{.Person.BirthPlace}}</span></td>
+      <td>{{with .Person.DeathYear}}{{.}}{{end}} {{if .Person.Living}}<span class="badge living">living</span>{{end}}</td>
+      <td>{{if $.CanEdit}}<a class="small" href="/person/{{.Person.ID}}/edit">edit</a>{{end}}</td>
+    </tr>
+    {{end}}
+  </table>
+  <div class="pager">
+    {{if .HasPrev}}<a href="/people?q={{.QueryP}}&amp;page={{.PrevPage}}">← newer</a>{{end}}
+    <span class="muted">page {{.Page}} / {{.Pages}}</span>
+    {{if .HasNext}}<a href="/people?q={{.QueryP}}&amp;page={{.NextPage}}">older →</a>{{end}}
+  </div>
+  {{else}}
+  <p class="muted">No matches.</p>
+  {{end}}
+</section>
+{{template "footer" .}}

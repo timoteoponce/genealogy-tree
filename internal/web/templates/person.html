@@ -1,0 +1,79 @@
+{{template "header" .}}
+<section class="personpage">
+  <div class="personhead">
+    <img class="portrait" src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="128" height="128">
+    <div class="pheadinfo">
+      <h1>{{.Person.DisplayName}}</h1>
+      <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">living</span>{{end}}</p>
+      {{if .CanEdit}}
+      <div class="actionrow">
+        <a class="btn" href="/person/{{.Person.ID}}/edit">Edit</a>
+        <a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a>
+        <a class="btn" href="/family/add?child={{.Person.ID}}">Add parents</a>
+      </div>
+      {{else}}
+      <div class="actionrow"><a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a></div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="personcols">
+    <div class="col">
+      <h2>Life facts</h2>
+      <table class="facttable">
+        {{with .Person.BirthDate}}<tr><th>Born</th><td>{{.}} {{with $.Person.BirthPlace}}· {{.}}{{end}}</td></tr>{{end}}
+        {{range .Events}}
+        <tr><th>{{.Tag}}</th><td>{{with .Date}}{{.}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>
+        {{end}}
+        {{with .Person.DeathDate}}<tr><th>Died</th><td>{{.}} {{with $.Person.DeathPlace}}· {{.}}{{end}}</td></tr>{{end}}
+      </table>
+
+      {{with .Person.Notes}}
+      <h2>Notes</h2>
+      <pre class="notes">{{.}}</pre>
+      {{end}}
+
+      {{with .Citations}}
+      <h2>Sources</h2>
+      <ul class="sourcelist">
+        {{range .}}<li>{{if .SourceTitle}}<b>{{.SourceTitle}}</b>{{else}}(untitled source){{end}}{{with .Citation.Detail}} — {{.}}{{end}}</li>{{end}}
+      </ul>
+      {{end}}
+    </div>
+
+    <div class="col">
+      {{with .Parents}}
+      <h2>Parents</h2>
+      <ul class="relativelist">
+        {{range .}}<li>{{template "personlink" .}}</li>{{end}}
+        {{if $.CanEdit}}{{if not .}}<li><a class="small" href="/family/add?child={{$.Person.ID}}">+ add parents</a></li>{{end}}{{end}}
+      </ul>
+      {{end}}
+
+      {{with .Siblings}}
+      <h2>Siblings</h2>
+      <ul class="relativelist">
+        {{range .}}<li>{{template "personlink" .}}</li>{{end}}
+      </ul>
+      {{end}}
+
+      {{range .Marriages}}
+      <h2>Spouse &amp; children</h2>
+      <p class="muted">
+        {{if .Spouse}}Spouse: {{template "personlink-short" .Spouse}}{{else}}Spouse: <span class="muted">unknown</span>{{end}}
+        {{if .Family.MarriageDate}} · married {{.Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
+      </p>
+      {{with .Children}}
+      <ul class="relativelist">
+        {{range .}}<li>{{template "personlink" .}}</li>{{end}}
+      </ul>
+      {{end}}
+      {{end}}
+    </div>
+  </div>
+</section>
+
+{{define "personlink-short"}}
+<a href="/person/{{.ID}}">{{.DisplayName}}</a> <span class="muted">{{.Years}}</span>
+{{end}}
+{{template "footer" .}}

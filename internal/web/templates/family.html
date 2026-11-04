@@ -1,0 +1,42 @@
+{{template "header" .}}
+<section>
+  <div class="personhead">
+    <div class="pheadinfo">
+      <h1>Family</h1>
+      <p class="muted">
+        {{range $i, $p := .Partners}}{{if $i}} &nbsp;·&nbsp; {{end}}<a href="/person/{{$p.ID}}">{{$p.DisplayName}}</a>{{end}}
+        {{if .Family.MarriageDate}} · married {{.Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
+        {{if eq .Family.Status "divorced"}} · <span class="badge">divorced</span>{{end}}
+      </p>
+      {{if .CanEdit}}
+      <div class="actionrow">
+        <a class="btn" href="/family/{{.Family.ID}}/edit">Edit family</a>
+        <a class="btn" href="/family/{{.Family.ID}}/edit">Add child</a>
+      </div>
+      {{end}}
+    </div>
+  </div>
+
+  {{with .Children}}
+  <h2>Children ({{len .}})</h2>
+  <ul class="relativelist">
+    {{range .}}<li><a href="/person/{{.Person.ID}}">{{.Person.DisplayName}}</a> <span class="muted">{{.Person.Years}}</span> {{if .Adopted}}<span class="badge">adopted</span>{{end}}</li>{{end}}
+  </ul>
+  {{end}}
+
+  {{with .Events}}
+  <h2>Family events</h2>
+  <table class="facttable">
+    {{range .}}<tr><th>{{.Tag}}</th><td>{{with .Date}}{{.}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>{{end}}
+  </table>
+  {{end}}
+
+  {{with .Citations}}
+  <h2>Sources</h2>
+  <ul class="sourcelist">
+    {{range .}}<li>{{if .SourceTitle}}<b>{{.SourceTitle}}</b>{{else}}(untitled source){{end}}{{with .Citation.Detail}} — {{.}}{{end}}</li>{{end}}
+  </ul>
+  {{end}}
+</section>
+
+{{template "footer" .}}

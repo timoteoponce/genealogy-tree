@@ -1,0 +1,24 @@
+{{template "header" .}}
+<section class="stats">
+  <div class="statcard"><b>{{.PeopleCount}}</b><span>people</span></div>
+  <div class="statcard"><b>{{.FamiliesCount}}</b><span>families</span></div>
+  <div class="statcard"><b>{{.MediaCount}}</b><span>photos</span></div>
+  <div class="statcard"><b>{{.SourcesCount}}</b><span>sources</span></div>
+</section>
+
+<section>
+  <h2>Recently added</h2>
+  {{if .Recent}}
+  <ul class="peoplelist">
+    {{range .Recent}}
+    <li>
+      <a class="avatarlink" href="/person/{{.Person.ID}}"><img src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="48" height="48"></a>
+      <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b> <span class="muted">{{.Person.Years}}</span></a>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="muted">No people yet — an admin can import a GEDCOM under {{if .CanAdmin}}<a href="/admin">Admin</a>{{else}}Admin{{end}}.</p>
+  {{end}}
+</section>
+{{template "footer" .}}
