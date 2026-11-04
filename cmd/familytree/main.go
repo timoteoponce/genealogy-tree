@@ -12,6 +12,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,12 +20,14 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	"genealogy-tree/internal/auth"
 	"genealogy-tree/internal/config"
 	"genealogy-tree/internal/db"
+	"genealogy-tree/internal/gedcom"
 	"genealogy-tree/internal/store"
 )
 
@@ -42,16 +45,62 @@ func main() {
 		err = runServe()
 	case "admin-create":
 		err = runAdminCreate(os.Args[2:])
+	case "import":
+		err = runImport(os.Args[2:])
 	case "version":
 		fmt.Println("familytree", buildVersion)
 	default:
 		fmt.Fprintln(os.Stderr, "unknown command:", cmd)
-		fmt.Fprintln(os.Stderr, "usage: familytree [serve|admin-create|version]")
+		fmt.Fprintln(os.Stderr, "usage: familytree [serve|admin-create|import|version]")
 		os.Exit(2)
 	}
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// runImport replaces the tree with a GEDCOM file:
+//
+//	familytree import family_tree.ged
+//
+// runImport replaces the tree with a GEDCOM file:
+//
+//	familytree import family_tree.ged
+func runImport(args []string) error {
+	fs := flag.NewFlagSet("import", flag.ExitOnError)
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 1 {
+		return fmt.Errorf("usage: familytree import <file.ged>")
+	}
+	path := fs.Arg(0)
+
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	d, err := db.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+
+	f, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("open %s: %w", path, err)
+	}
+	defer f.Close()
+
+	ctx := context.Background()
+	rep, err := gedcom.Import(ctx, store.New(d), f, filepath.Base(path))
+	if err != nil {
+		return err
+	}
+	w, _ := json.MarshalIndent(rep.Warnings, "", "  ")
+	fmt.Printf("imported %s:\n  people: %d\n  families: %d\n  sources: %d\n  events: %d\n  media refs: %d\n  warnings:\n%s\n",
+		path, rep.People, rep.Families, rep.Sources, rep.Events, rep.Media, w)
+	return nil
 }
 
 // runAdminCreate creates the initial admin (or any-role) account from the

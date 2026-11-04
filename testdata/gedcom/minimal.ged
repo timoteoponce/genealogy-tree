@@ -1,0 +1,49 @@
+0 HEAD
+1 SOUR MYHERITAGE
+2 NAME MyHeritage.com
+1 GEDC
+2 VERS 5.5.1
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME John /Smith/
+2 GIVN John
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 1847
+2 PLAC Boston, Massachusetts
+1 OCCU
+2 DATE BET 1865 AND 1900
+2 PLAC Boston, Massachusetts
+2 TYPE Blacksmith
+1 DEAT Y
+2 DATE ABT 1912
+2 PLAC Boston, Massachusetts
+1 FAMS @F1@
+1 NOTE John was a blacksmith.
+2 CONT He loved the forge.
+0 @I2@ INDI
+1 NAME Mary /Jones/
+2 GIVN Mary
+2 SURN Jones
+1 SEX F
+1 BIRT
+2 DATE 1855
+2 PLAC Hartford, Connecticut
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Samuel /Smith/
+2 GIVN Samuel
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 1880
+1 FAMC @F1@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 MARR
+2 DATE 1875
+2 PLAC Hartford, Connecticut
+0 TRLR

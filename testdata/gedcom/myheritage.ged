@@ -1,0 +1,80 @@
+0 HEAD
+1 SOUR MYHERITAGE
+2 NAME MyHeritage.com
+2 CORP MyHeritage Ltd.
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 DATE 12 OCT 2023
+0 @I1@ INDI
+1 NAME Iszák Ádám /Kovács/
+2 GIVN Iszák Ádám
+2 SURN Kovács
+2 _HEB יצחק אדם כהן
+2 _MARNM Varga
+1 SEX M
+1 OCCU
+2 DATE ABT 1950
+2 PLAC Budapest
+2 TYPE Car mechanic
+1 EDUC
+2 DATE ABT 1968
+2 PLAC Budapest Politechnic
+1 RESI
+2 DATE 1955
+2 PLAC Budapest, Kiraly u. 12
+1 EDUC
+2 DATE ABT 1975
+2 PLAC Budapest
+1 CHR Y
+2 DATE ABT 1952
+2 PLAC Budapest
+1 BAPM
+2 DATE 1953
+2 PLAC Budapest Reformed Church
+1 SOUR @S1@
+2 PAGE page 150 denize
+1 NOTE He grew up in cash-constrained circumstances.
+2 CONT The family barely made ends meet.
+2 CONT Later he learned a trade.
+1 OBJE
+2 FILE People/photo_12345.jpg
+2 TITL Wedding photo
+1 OBJE
+2 FILE Documents/record_987.pdf
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Anna /Varga/
+2 GIVN Anna
+2 SURN Varga
+1 SEX F
+1 BIRT
+2 DATE CAL 1938
+2 PLAC Debrecen
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Zoltán /Kovács/
+2 GIVN Zoltán
+2 SURN Kovács
+1 SEX M
+1 BIRT
+2 DATE BET 1962 AND 1965
+1 FAMC @F1@
+1 OCCU
+2 PLAC Vienna
+1 SOUR @S99@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 MARR
+2 DATE 1961
+2 PLAC Debrecen
+1 SOUR @S1@
+0 @S1@ SOUR
+1 TITL Hungarian Civil Registration, 1895-1980
+2 AUTH National Archives of Hungary
+0 @S2@ SOUR
+1 TITL Unreferenced source
+0 TRLR
