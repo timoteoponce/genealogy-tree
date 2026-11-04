@@ -13,6 +13,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,7 +22,10 @@ import (
 	"syscall"
 	"time"
 
+	"genealogy-tree/internal/auth"
 	"genealogy-tree/internal/config"
+	"genealogy-tree/internal/db"
+	"genealogy-tree/internal/store"
 )
 
 // buildVersion is set with -ldflags at build time.
@@ -36,16 +40,64 @@ func main() {
 	switch cmd {
 	case "serve":
 		err = runServe()
+	case "admin-create":
+		err = runAdminCreate(os.Args[2:])
 	case "version":
 		fmt.Println("familytree", buildVersion)
 	default:
 		fmt.Fprintln(os.Stderr, "unknown command:", cmd)
-		fmt.Fprintln(os.Stderr, "usage: familytree [serve|version]")
+		fmt.Fprintln(os.Stderr, "usage: familytree [serve|admin-create|version]")
 		os.Exit(2)
 	}
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// runAdminCreate creates the initial admin (or any-role) account from the
+// command line: familytree admin-create -u admin -p 'LongPassword'
+func runAdminCreate(args []string) error {
+	fs := flag.NewFlagSet("admin-create", flag.ExitOnError)
+	username := fs.String("u", "", "username (required)")
+	password := fs.String("p", "", "password (required)")
+	role := fs.String("role", "admin", "role: admin|editor|viewer")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *username == "" || *password == "" {
+		return fmt.Errorf("both -u (username) and -p (password) are required")
+	}
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	d, err := db.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	q := store.New(d).Queries()
+	ctx := context.Background()
+
+	if n, err := q.CountUsers(ctx); err != nil {
+		return err
+	} else if n == 0 && *role != "admin" {
+		log.Printf("this is the first account; forcing role=admin")
+		*role = "admin"
+	}
+
+	hash, err := auth.HashPassword(*password)
+	if err != nil {
+		return err
+	}
+	if _, err := q.CreateUser(ctx, *username, hash, *role); err != nil {
+		return err
+	}
+	if err := q.InsertAudit(ctx, q.DB, nil, "admin-create", "user", nil, *username); err != nil {
+		return err
+	}
+	fmt.Printf("created user %q with role %q\n", *username, *role)
+	return nil
 }
 
 func runServe() error {

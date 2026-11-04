@@ -21,11 +21,13 @@ CREATE TABLE users (
 );
 
 -- Sessions: id is the SHA-256 hex of the random cookie token (the raw token
--- is never stored, so the DB cannot mint valid cookies).
+-- is never stored, so the DB cannot mint valid cookies). csrf is the token
+-- every authenticated POST must echo back in its form data.
 CREATE TABLE sessions (
   id TEXT PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at TEXT NOT NULL,
+  csrf TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX idx_sessions_user ON sessions (user_id);
