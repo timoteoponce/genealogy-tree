@@ -80,8 +80,8 @@ func descendantsOf(ctx context.Context, q *store.Queries, start models.Person, m
 	return rows
 }
 
-// treePage renders the tree view (server-side fallback for M4; the
-// interactive family-chart widget replaces this in M5).
+// treePage renders the tree view: the interactive family-chart by default,
+// or the plain server-rendered indent lists with ?view=list.
 func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := s.St.Queries()
@@ -100,15 +100,18 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 
 	data := s.baseData(r, "Tree: "+person.DisplayName())
 	data["Person"] = person
-	data["Ancestors"] = ancestorsOf(ctx, q, person, depth)
-	data["Descendants"] = descendantsOf(ctx, q, person, depth)
 	data["Gens"] = depth
 	data["GensChoices"] = []int{2, 3, 4, 5, 6}
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
+	data["View"] = r.URL.Query().Get("view")
+
+	if data["View"] == "list" {
+		data["Ancestors"] = ancestorsOf(ctx, q, person, depth)
+		data["Descendants"] = descendantsOf(ctx, q, person, depth)
+	} else {
+		data["Ancestors"], data["Descendants"] = nil, nil
+	}
 	s.render(w, "tree.html", http.StatusOK, data)
 }
 
-// treeData serves the JSON for the interactive chart (arrives in M5).
-func (s *Server) treeData(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "coming soon", http.StatusNotImplemented)
-}
+// treeData moved to tree_data.go (family-chart JSON with full rels).

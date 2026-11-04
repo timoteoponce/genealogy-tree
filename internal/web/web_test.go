@@ -180,18 +180,32 @@ func TestPersonAndFamilyPages(t *testing.T) {
 func TestTreeViewFallback(t *testing.T) {
 	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
 
+	// Default = interactive chart page with the data endpoint wired.
 	status, body := get(t, e.admin, e.ts.URL+"/person/3/tree")
+	if status != http.StatusOK || !strings.Contains(body, `id="chart" class="f3"`) {
+		t.Fatalf("chart tree page: %d", status)
+	}
+	if !strings.Contains(body, `data-focus-id="3"`) {
+		t.Errorf("focus id not passed to the chart: %s", body)
+	}
+
+	// tree.json returns family-chart nodes around the focus person.
+	status, body = get(t, e.admin, e.ts.URL+"/tree.json?person=3")
+	if status != http.StatusOK {
+		t.Fatalf("tree.json: %d", status)
+	}
+	if !strings.Contains(body, `"first name":"John"`) || !strings.Contains(body, `"parents":["1","2"]`) {
+		t.Fatalf("tree.json content unexpected: %s", body)
+	}
+
+	// ?view=list keeps the server-rendered fallback.
+	status, body = get(t, e.admin, e.ts.URL+"/person/3/tree?view=list")
 	if status != http.StatusOK || !strings.Contains(body, "Ancestors") || !strings.Contains(body, "John Smith") {
-		t.Fatalf("tree ancestors: %d %s", status, body)
+		t.Fatalf("list ancestors: %d %s", status, body)
 	}
-	status, body = get(t, e.admin, e.ts.URL+"/person/1/tree")
+	status, body = get(t, e.admin, e.ts.URL+"/person/1/tree?view=list")
 	if status != http.StatusOK || !strings.Contains(body, "Descendants") || !strings.Contains(body, "Samuel") {
-		t.Fatalf("tree descendants: %d %s", status, body)
-	}
-	// the JSON endpoint is not wired yet — stays a polite 501
-	status, _ = get(t, e.admin, e.ts.URL+"/tree.json?person=1")
-	if status != http.StatusNotImplemented {
-		t.Errorf("tree.json placeholder: %d", status)
+		t.Fatalf("list descendants: %d %s", status, body)
 	}
 }
 

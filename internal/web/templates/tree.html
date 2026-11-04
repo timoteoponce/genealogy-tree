@@ -1,18 +1,31 @@
 {{template "header" .}}
-<section class="personhead">
-  <img class="portrait" src="/media/{{.PhotoID}}/thumb" alt="" width="64" height="64">
+{{if eq .View "list"}}
+<link rel="stylesheet" href="/static/vendor/family-chart.css">
+{{end}}
+
+<section class="personhead treepage-head">
+  <img class="portrait" src="/media/{{.PhotoID}}/thumb" alt="" width="56" height="56">
   <div class="pheadinfo">
-    <h1><a href="/person/{{.Person.ID}}">{{.Person.DisplayName}}</a></h1>
-    <p class="muted">Tree centered on this person</p>
-    <div class="actionrow">
+    <h1>Family tree</h1>
+    <p class="focusbar" id="focusbar">
+      Focused on: <b id="focusName">{{.Person.DisplayName}}</b>
+      <a class="btn small" id="focusLink" href="/person/{{.Person.ID}}">Open profile</a>
+      <span class="muted">generations:</span>
       {{range $g := .GensChoices}}
-        {{if eq $g $.Gens}}<span class="badge">{{$g}} generations</span>
-        {{else}}<a class="small" href="/person/{{$.Person.ID}}/tree?gens={{$g}}">{{$g}} generations</a>{{end}}
+        {{if eq $g $.Gens}}<span class="badge">{{$g}}</span>
+        {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}{{if eq $.View "list"}}&amp;view=list{{end}}">{{$g}}</a>{{end}}
       {{end}}
-    </div>
+      {{if eq .View "list"}}
+        <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}">Chart view</a>
+      {{else}}
+        <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view=list">List view</a>
+      {{end}}
+      {{if .CanEdit}}<a class="btn small" href="/person/{{.Person.ID}}/edit">Edit this person</a>{{end}}
+    </p>
   </div>
 </section>
 
+{{if eq .View "list"}}
 <div class="personcols">
   <div class="col">
     <h2>Ancestors</h2>
@@ -36,7 +49,7 @@
       {{range .Descendants}}
       <li style="margin-left: {{.Depth}}rem;">
         <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a> <span class="muted">{{.Person.Years}}</span>
-        {{with .Spouse}} ⚭ {{template "personlink-inline" .}}{{end}}
+        {{with .Spouse}} ⚭ <a href="/person/{{.ID}}">{{.DisplayName}}</a>{{end}}
       </li>
       {{end}}
     </ul>
@@ -45,5 +58,12 @@
     {{end}}
   </div>
 </div>
-
+{{else}}
+<section class="chartwrap">
+  <div id="chart" class="f3" data-focus-id="{{.Person.ID}}" data-gens="{{.Gens}}"></div>
+</section>
+<script src="/static/vendor/d3.min.js"></script>
+<script src="/static/vendor/family-chart.min.js"></script>
+<script type="module" src="/static/tree.js"></script>
+{{end}}
 {{template "footer" .}}

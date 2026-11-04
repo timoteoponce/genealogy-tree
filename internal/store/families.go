@@ -157,6 +157,30 @@ func (q *Queries) CountFamilies(ctx context.Context) (int64, error) {
 	return n, err
 }
 
+// AllFamilies loads every family (chart building on small trees).
+func (q *Queries) AllFamilies(ctx context.Context) ([]models.Family, error) {
+	return queryFamilies(ctx, q.DB, `SELECT `+familyCols+` FROM families ORDER BY id`)
+}
+
+// AllChildLinks loads every child link (ordered by family, then ord).
+func (q *Queries) AllChildLinks(ctx context.Context) ([]models.ChildLink, error) {
+	rows, err := q.DB.QueryContext(ctx,
+		`SELECT id, family_id, person_id, ord, relationship FROM child_links ORDER BY family_id, ord, id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []models.ChildLink{}
+	for rows.Next() {
+		var l models.ChildLink
+		if err := rows.Scan(&l.ID, &l.FamilyID, &l.PersonID, &l.Ord, &l.Relationship); err != nil {
+			return nil, err
+		}
+		out = append(out, l)
+	}
+	return out, rows.Err()
+}
+
 func queryFamilies(ctx context.Context, db DBTX, query string, args ...any) ([]models.Family, error) {
 	rows, err := db.QueryContext(ctx, query, args...)
 	if err != nil {
