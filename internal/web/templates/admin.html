@@ -1,0 +1,33 @@
+{{template "header" .}}
+<section>
+  <h1>Admin</h1>
+  <div class="stats">
+    <div class="statcard"><a href="/admin/users"><b>{{.UserCount}}</b><span>users</span></a></div>
+  </div>
+  <div class="actionrow">
+    <a class="btn" href="/admin/users">Users</a>
+    <a class="btn" href="/admin/import">Import GEDCOM</a>
+    <a class="btn" href="/admin/settings">Settings</a>
+  </div>
+
+  <h2>Latest imports</h2>
+  <table class="peopletable">
+    <tr><th>At</th><th>File</th><th>Status</th><th>People</th><th>Families</th><th>Sources</th><th>Events</th><th>Media</th></tr>
+    {{range .Imports}}
+    <tr>
+      <td class="muted">{{.StartedAt}}</td>
+      <td>{{.Filename}}</td>
+      <td>{{if eq .Status "done"}}<span class="badge living">{{.Status}}</span>{{else}}<span class="badge">{{.Status}}</span>{{end}}</td>
+      <td>{{.People}}</td><td>{{.Families}}</td><td>{{.Sources}}</td><td>{{.Events}}</td><td>{{.MediaRows}}</td>
+    </tr>
+    {{end}}
+  </table>
+
+  <h2>Recent activity</h2>
+  <ul class="sourcelist">
+    {{range .Audit}}
+    <li><span class="muted">{{.At}}</span> — {{if .Username}}<b>{{.Username}}</b>{{else}}system{{end}} {{.Action}} {{.Entity}}{{with .Detail}} ({{.}}){{end}}</li>
+    {{end}}
+  </ul>
+</section>
+{{template "footer" .}}

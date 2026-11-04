@@ -157,3 +157,5 @@ label.inline { display: inline-flex; gap: .4rem; align-items: center; font-weigh
 .mediabar { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
 .uploadform { display: flex; gap: .4rem; align-items: center; margin-top: .5rem; flex-wrap: wrap; }
 .uploadform input[type="file"] { max-width: 14rem; }
+
+.notice { color: var(--accent-dark); background: #e7f0e5; padding: .4rem .7rem; border-radius: 7px; }

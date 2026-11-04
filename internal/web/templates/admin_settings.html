@@ -1,0 +1,14 @@
+{{template "header" .}}
+<section>
+  <h1>Settings</h1>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  {{with .Notice}}<p class="notice">{{.}}</p>{{end}}
+  <form method="post" action="/admin/settings" class="formbox">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>Site name (shown in the top bar and titles)
+      <input name="site_name" value="{{index .Settings "site_name"}}" maxlength="60" required>
+    </label>
+    <button type="submit">Save settings</button>
+  </form>
+</section>
+{{template "footer" .}}

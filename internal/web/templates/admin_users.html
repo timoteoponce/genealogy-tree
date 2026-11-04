@@ -1,0 +1,58 @@
+{{template "header" .}}
+<section>
+  <h1>Users</h1>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  {{with .Notice}}<p class="notice">{{.}}</p>{{end}}
+
+  <table class="peopletable">
+    <tr><th>#</th><th>Username</th><th>Role</th><th>Actions</th></tr>
+    {{range .Users}}
+    <tr>
+      <td class="muted">{{.ID}}</td>
+      <td><b>{{.Username}}</b>{{if eq .ID $.CurrentUserID}} <span class="badge">you</span>{{end}}</td>
+      <td>{{.Role}}</td>
+      <td>
+        <form method="post" action="/admin/users/{{.ID}}/role" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          {{ $role := .Role }}
+          <select name="role">
+            {{range $r := list "admin" "editor" "viewer"}}
+            <option value="{{$r}}"{{if eq $r $role}} selected{{end}}>{{$r}}</option>
+            {{end}}
+          </select>
+          <button class="small" type="submit">Set role</button>
+        </form>
+        <form method="post" action="/admin/users/{{.ID}}/password" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <input name="password" type="password" placeholder="new password" size="12">
+          <button class="small" type="submit">Set password</button>
+        </form>
+        {{if ne .ID $.CurrentUserID}}
+        <form method="post" action="/admin/users/{{.ID}}/delete" class="inline">
+          <input type="hidden" name="csrf" value="{{$.CSRF}}">
+          <button class="linklike small danger" type="submit">delete</button>
+        </form>
+        {{end}}
+      </td>
+    </tr>
+    {{end}}
+  </table>
+
+  <h2>Create user</h2>
+  <form method="post" action="/admin/users" class="formbox">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <label>Username <input name="username" required></label>
+    <label>Password <span class="muted">(min 8 chars)</span>
+      <input name="password" type="password" required>
+    </label>
+    <label>Role
+      <select name="role">
+        <option value="viewer">viewer</option>
+        <option value="editor">editor</option>
+        <option value="admin">admin</option>
+      </select>
+    </label>
+    <button type="submit">Create user</button>
+  </form>
+</section>
+{{template "footer" .}}

@@ -32,7 +32,11 @@ type Server struct {
 
 // NewServer parses templates once and returns a ready server.
 func NewServer(cfg config.Config, st *store.Store) (*Server, error) {
-	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
+	funcs := template.FuncMap{
+		// list returns its string arguments as a slice (template helper).
+		"list": func(args ...string) []string { return args },
+	}
+	tmpl, err := template.New("web").Funcs(funcs).ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse templates: %w", err)
 	}
@@ -96,6 +100,21 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("POST /family/{id}/children/add", s.wrap("editor", s.familyAddChild))
 	mux.HandleFunc("POST /family/{id}/children/remove", s.wrap("editor", s.familyRemoveChild))
 
+	// Admin area (role = admin).
+	mux.HandleFunc("GET /admin", s.wrap("admin", s.adminOverview))
+	mux.HandleFunc("GET /admin/users", s.wrap("admin", func(w http.ResponseWriter, r *http.Request) {
+		s.adminUsersPage(w, r, "", "")
+	}))
+	mux.HandleFunc("POST /admin/users", s.wrap("admin", s.adminUserCreate))
+	mux.HandleFunc("POST /admin/users/{id}/role", s.wrap("admin", s.adminUserUpdateRole))
+	mux.HandleFunc("POST /admin/users/{id}/password", s.wrap("admin", s.adminUserSetPassword))
+	mux.HandleFunc("POST /admin/users/{id}/delete", s.wrap("admin", s.adminUserDelete))
+	mux.HandleFunc("GET /admin/import", s.wrap("admin", s.adminImportForm))
+	mux.HandleFunc("POST /admin/import", s.wrap("admin", s.adminImportSubmit))
+	mux.HandleFunc("GET /admin/settings", s.wrap("admin", s.adminSettingsForm))
+	mux.HandleFunc("POST /admin/settings", s.wrap("admin", s.adminSettingsSubmit))
+	mux.HandleFunc("GET /admin/audit", s.wrap("admin", s.adminAuditPage))
+
 	return mux
 }
 
@@ -113,9 +132,13 @@ func isAdmin(role string) bool { return role == "admin" }
 
 // baseData composes the per-page template data.
 func (s *Server) baseData(r *http.Request, title string) map[string]any {
+	siteName := s.site
+	if name, ok, _ := s.St.Queries().GetSetting(r.Context(), "site_name"); ok && name != "" {
+		siteName = name
+	}
 	data := map[string]any{
 		"Title":    title,
-		"SiteName": s.site,
+		"SiteName": siteName,
 		"CanEdit":  false,
 		"CanAdmin": false,
 	}

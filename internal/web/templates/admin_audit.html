@@ -1,0 +1,18 @@
+{{template "header" .}}
+<section>
+  <h1>Audit log</h1>
+  <table class="peopletable">
+    <tr><th>At</th><th>User</th><th>Action</th><th>Entity</th><th>ID</th><th>Detail</th></tr>
+    {{range .Audit}}
+    <tr>
+      <td class="muted">{{.At}}</td>
+      <td>{{if .Username}}<b>{{.Username}}</b>{{else}}<span class="muted">system</span>{{end}}</td>
+      <td>{{.Action}}</td>
+      <td>{{.Entity}}</td>
+      <td class="muted">{{with .EntityID}}{{.}}{{end}}</td>
+      <td>{{with .Detail}}{{.}}{{end}}</td>
+    </tr>
+    {{end}}
+  </table>
+</section>
+{{template "footer" .}}
