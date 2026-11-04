@@ -139,6 +139,8 @@ func (s *Server) personPage(w http.ResponseWriter, r *http.Request) {
 	data["Parents"] = parents
 	data["Siblings"] = siblings
 	data["ProfilePhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
+	media, _ := q.ListMediaForPerson(ctx, person.ID)
+	data["Media"] = media
 
 	s.render(w, "person.html", http.StatusOK, data)
 }

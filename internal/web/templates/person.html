@@ -34,6 +34,50 @@
       <pre class="notes">{{.}}</pre>
       {{end}}
 
+      {{if .Media}}
+      <h2>Photos ({{len .Media}})</h2>
+      <div class="gallery">
+        {{range .Media}}
+        <figure class="mediaitem{{if .IsProfile}} profile{{end}}">
+          <a href="/media/{{.ID}}/full"><img src="/media/{{.ID}}/thumb" alt="{{.Caption}}" width="120" height="120"></a>
+          <figcaption>{{with .Caption}}{{.}}{{end}}{{if .ImportNote}}<span class="badge">placeholder</span>{{end}}{{if .IsProfile}}<span class="badge living">portrait</span>{{end}}</figcaption>
+          {{if $.CanEdit}}
+          <div class="mediabar">
+            {{if not .IsProfile}}
+            <form method="post" action="/media/{{.ID}}/profile" class="inline">
+              <input type="hidden" name="csrf" value="{{$.CSRF}}">
+              <button class="linklike small" type="submit">set portrait</button>
+            </form>
+            {{end}}
+            {{if .ImportNote}}
+            <form method="post" action="/person/{{$.Person.ID}}/media" enctype="multipart/form-data" class="inline uploadform">
+              <input type="hidden" name="csrf" value="{{$.CSRF}}">
+              <input type="hidden" name="media_id" value="{{.ID}}">
+              <input type="file" name="file" required>
+              <button class="small" type="submit">attach</button>
+            </form>
+            {{end}}
+            <form method="post" action="/media/{{.ID}}/delete" class="inline">
+              <input type="hidden" name="csrf" value="{{$.CSRF}}">
+              <button class="linklike small danger" type="submit">delete</button>
+            </form>
+          </div>
+          {{end}}
+        </figure>
+        {{end}}
+      </div>
+      {{end}}
+
+      {{if and .CanEdit (not .Media)}}
+      <h2>Upload photo</h2>
+      <form method="post" action="/person/{{.Person.ID}}/media" enctype="multipart/form-data" class="uploadform">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <input type="file" name="file" required>
+        <input name="caption" placeholder="caption (optional)" class="short">
+        <button type="submit">Upload</button>
+      </form>
+      {{end}}
+
       {{with .Citations}}
       <h2>Sources</h2>
       <ul class="sourcelist">

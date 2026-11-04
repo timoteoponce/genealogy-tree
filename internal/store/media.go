@@ -134,7 +134,22 @@ func (q *Queries) MediaData(ctx context.Context, id int64) (models.MediaData, er
 	return d, nil
 }
 
-// SetProfilePhoto makes mediaID the one profile photo of the person.
+// UpgradeMedia fills the blobs of an import placeholder row (GEDCOM OBJE)
+// with a real upload.
+func (q *Queries) UpgradeMedia(ctx context.Context, id int64, filename, mime string, size int, thumb, data []byte) error {
+	_, err := q.DB.ExecContext(ctx, `UPDATE media SET
+filename=?, mime=?, size=?, import_note=0, thumb=?, data=?, updated_at=datetime('now')
+WHERE id=?`, filename, mime, size, thumb, data, id)
+	return err
+}
+
+// InsertAuditLog stores one audit entry with the acting user (convenience
+// wrapper so handlers can call it as part of the Queries fluent style).
+func (q *Queries) InsertAuditLog(ctx context.Context, db DBTX, userID *int64,
+	action, entity string, entityID *int64, detail string) {
+	_ = q.InsertAudit(ctx, db, userID, action, entity, entityID, detail)
+}
+
 func (q *Queries) SetProfilePhoto(ctx context.Context, personID, mediaID int64) error {
 	tx, err := beginTx(ctx, q.DB)
 	if err != nil {

@@ -147,3 +147,13 @@ button.danger, .danger { background: var(--danger); }
   display: flex; gap: 1rem; align-items: center;
 }
 label.inline { display: inline-flex; gap: .4rem; align-items: center; font-weight: 400; }
+
+/* gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: .8rem; }
+.mediaitem { margin: 0; padding: .5rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+.mediaitem.profile { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.mediaitem img { border-radius: 8px; object-fit: cover; background: #dedbd3; display: block; width: 100%; height: auto; }
+.mediaitem figcaption { font-size: .8rem; color: var(--muted); margin-top: .3rem; }
+.mediabar { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
+.uploadform { display: flex; gap: .4rem; align-items: center; margin-top: .5rem; flex-wrap: wrap; }
+.uploadform input[type="file"] { max-width: 14rem; }

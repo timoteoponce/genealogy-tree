@@ -72,6 +72,11 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /person/{id}/tree", s.wrap("viewer", s.treePage))
 	mux.HandleFunc("GET /tree.json", s.wrap("viewer", s.treeData))
 
+	mux.HandleFunc("POST /person/{id}/media", s.wrap("editor", s.personMediaUpload))
+	mux.HandleFunc("POST /media/{id}/profile", s.wrap("editor", s.mediaSetProfile))
+	mux.HandleFunc("POST /media/{id}/caption", s.wrap("editor", s.mediaCaption))
+	mux.HandleFunc("POST /media/{id}/delete", s.wrap("editor", s.mediaDelete))
+
 	// Editor forms (M6): person/family editing + guided add-relative flows.
 	// Deleting people/families is admin-only.
 	mux.HandleFunc("GET /person/new", s.wrap("editor", s.personNewPage))
