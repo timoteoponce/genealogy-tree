@@ -1,0 +1,30 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+[tools]
+go = "1.27"
+
+[env]
+DATA_DIR = "{{config_root}}/.data"
+PORT = "8080"
+# http on localhost in dev; set APP_COOKIE_SECURE=true behind a TLS proxy in production
+APP_COOKIE_SECURE = "false"
+
+[tasks.dev]
+description = "Run the server from source"
+run = "go run ./cmd/familytree serve"
+
+[tasks.build]
+description = "Build the single static binary (CGO off, SQLite is pure Go)"
+run = "mkdir -p bin && CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o bin/familytree ./cmd/familytree"
+
+[tasks.check]
+description = "Everything a commit must pass: gofmt, vet, tests"
+run = """
+test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+go vet ./...
+go test ./...
+"""
+
+[tasks.docker]
+description = "Build the deployment image"
+run = "docker build -t genealogy-tree ."

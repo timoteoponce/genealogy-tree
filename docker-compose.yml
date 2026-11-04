@@ -1,0 +1,16 @@
+services:
+  familytree:
+    build: .
+    image: genealogy-tree
+    ports:
+      - "8080:8080"
+    environment:
+      DATA_DIR: /data
+      # Set to true when serving over HTTPS (nginx/Caddy in front).
+      APP_COOKIE_SECURE: "false"
+    volumes:
+      - familytree-data:/data
+    restart: unless-stopped
+
+volumes:
+  familytree-data:
