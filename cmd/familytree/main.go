@@ -48,11 +48,15 @@ func main() {
 		err = runAdminCreate(os.Args[2:])
 	case "import":
 		err = runImport(os.Args[2:])
+	case "backup":
+		err = runBackup(os.Args[2:])
+	case "healthcheck":
+		err = runHealthcheck(os.Args[2:])
 	case "version":
 		fmt.Println("familytree", buildVersion)
 	default:
 		fmt.Fprintln(os.Stderr, "unknown command:", cmd)
-		fmt.Fprintln(os.Stderr, "usage: familytree [serve|admin-create|import|version]")
+		fmt.Fprintln(os.Stderr, "usage: familytree [serve|admin-create|import|backup|healthcheck|version]")
 		os.Exit(2)
 	}
 	if err != nil {
@@ -61,9 +65,56 @@ func main() {
 }
 
 // runImport replaces the tree with a GEDCOM file:
+// runBackup writes an online, consistent copy of the database:
 //
-//	familytree import family_tree.ged
-//
+//	familytree backup /var/backups/familytree-2026-11-04.db
+func runBackup(args []string) error {
+	fs := flag.NewFlagSet("backup", flag.ExitOnError)
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 1 {
+		return fmt.Errorf("usage: familytree backup <destination.db>")
+	}
+	cfg, err := config.Load()
+	if err != nil {
+		return err
+	}
+	d, err := db.Open(cfg.DBPath)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+
+	size, err := db.BackupTo(d, fs.Arg(0))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("backed up %s → %s (%d bytes)\n", cfg.DBPath, fs.Arg(0), size)
+	return nil
+}
+
+// runHealthcheck exits 0 when the server answers /healthz on localhost
+// (used by the Docker HEALTHCHECK), 1 otherwise.
+func runHealthcheck(args []string) error {
+	fs := flag.NewFlagSet("healthcheck", flag.ExitOnError)
+	port := fs.Int("port", 8080, "port the server listens on")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(fmt.Sprintf("http://127.0.0.1:%d/healthz", *port))
+	if err != nil {
+		return fmt.Errorf("healthcheck: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("healthy")
+		return nil
+	}
+	return fmt.Errorf("unhealthy: status %d", resp.StatusCode)
+}
+
 // runImport replaces the tree with a GEDCOM file:
 //
 //	familytree import family_tree.ged

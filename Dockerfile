@@ -8,9 +8,14 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /out/familytree ./cmd/familytree
+# Pre-create /data owned by the runtime user: when a NAMED docker volume is
+# mounted to /data on first run, docker copies the image dir (including this
+# ownership) into the volume — so the nonroot process can write its DB.
+RUN mkdir -p /out/data && chown 65532:65532 /out/data
 
 FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=build /out/familytree /familytree
+COPY --from=build --chown=65532:65532 /out/data /data
 VOLUME /data
 EXPOSE 8080
 # Healthcheck runs the binary itself against /healthz (no curl/wget in distroless).
