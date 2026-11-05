@@ -19,7 +19,7 @@
       <a class="btn small" id="focusLink" href="/person/{{.Person.ID}}">Open profile</a>
       {{if .FullTree}}
         <label class="muted">root:
-          <select id="rootSelect" onchange="location='/tree?person='+this.value">
+          <select id="rootSelect" onchange="location='/tree?person='+this.value{{if eq .Orient "h"}}+'&orient=h'{{end}}">
             {{range .Roots}}
             <option value="{{.ID}}"{{if eq .ID $.Person.ID}} selected{{end}}>
               {{(index $.RootIndex .ID).DisplayName}} · {{.Reach}} people
@@ -31,12 +31,19 @@
         <span class="muted">generations:</span>
         {{range $g := .GensChoices}}
           {{if eq $g $.Gens}}<span class="badge">{{$g}}</span>
-          {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}{{if eq $.View "list"}}&amp;view=list{{end}}">{{$g}}</a>{{end}}
+          {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}{{if eq $.Orient "h"}}&amp;orient=h{{end}}{{if eq $.View "list"}}&amp;view=list{{end}}">{{$g}}</a>{{end}}
         {{end}}
         {{if eq .View "list"}}
           <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}">Chart view</a>
         {{else}}
           <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view=list">List view</a>
+        {{end}}
+      {{end}}
+      {{if not (eq .View "list")}}
+        {{if eq .Orient "h"}}
+          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}">Vertical</a>
+        {{else}}
+          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;orient=h">Horizontal</a>
         {{end}}
       {{end}}
       {{if .CanEdit}}<a class="btn small" href="/person/{{.Person.ID}}/edit">Edit this person</a>{{end}}
@@ -79,7 +86,7 @@
 </div>
 {{else}}
 <section class="chartwrap">
-  <div id="chart" class="f3" data-focus-id="{{.Person.ID}}" data-gens="{{.Gens}}"></div>
+  <div id="chart" class="f3" data-focus-id="{{.Person.ID}}" data-gens="{{.Gens}}" data-orient="{{.Orient}}"></div>
 </section>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/vendor/family-chart.min.js"></script>

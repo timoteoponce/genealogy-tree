@@ -125,6 +125,7 @@ func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 	data["FullTree"] = true
 	data["Roots"] = roots
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
+	data["Orient"] = orientParam(r, "h") // descendant-heavy → horizontal by default
 
 	// Name lookup for the root picker.
 	idx := map[int64]models.Person{}
@@ -161,6 +162,7 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 	data["GensChoices"] = []int{2, 3, 4, 5, 6}
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
 	data["View"] = r.URL.Query().Get("view")
+	data["Orient"] = orientParam(r, "v") // classic pedigree: vertical by default
 
 	if data["View"] == "list" {
 		data["Ancestors"] = ancestorsOf(ctx, q, person, depth)
@@ -169,6 +171,15 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 		data["Ancestors"], data["Descendants"] = nil, nil
 	}
 	s.render(w, "tree.html", http.StatusOK, data)
+}
+
+// orientParam returns "h" (horizontal) when the query asks for it, else the
+// given default.
+func orientParam(r *http.Request, fallback string) string {
+	if r.URL.Query().Get("orient") == "h" {
+		return "h"
+	}
+	return fallback
 }
 
 // treeData moved to tree_data.go (family-chart JSON with full rels).

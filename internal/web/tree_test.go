@@ -44,6 +44,30 @@ func TestFullTreePage(t *testing.T) {
 	}
 }
 
+// TestTreeOrientationToggle: full tree defaults horizontal (data-orient="h"),
+// per-person tree defaults vertical, and ?orient=h flips it.
+func TestTreeOrientationToggle(t *testing.T) {
+	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
+
+	_, body := get(t, e.admin, e.ts.URL+"/tree")
+	if !strings.Contains(body, `data-orient="h"`) {
+		t.Errorf("full tree should default horizontal: %s", body)
+	}
+
+	_, body = get(t, e.admin, e.ts.URL+"/person/1/tree")
+	if !strings.Contains(body, `data-orient="v"`) {
+		t.Errorf("per-person tree should default vertical")
+	}
+	if !strings.Contains(body, "Horizontal") {
+		t.Errorf("per-person tree should offer a horizontal toggle")
+	}
+
+	_, body = get(t, e.admin, e.ts.URL+"/person/1/tree?orient=h")
+	if !strings.Contains(body, `data-orient="h"`) {
+		t.Errorf("?orient=h should flip to horizontal")
+	}
+}
+
 // TestFullTreeEmptyDB renders the friendly empty state on a fresh deployment.
 func TestFullTreeEmptyDB(t *testing.T) {
 	e := emptyEnv(t)

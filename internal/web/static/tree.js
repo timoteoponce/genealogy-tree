@@ -1,10 +1,10 @@
 // tree.js — interactive family tree (family-chart), self-hosted, no CDN.
-// Served at /person/{id}/tree. Data comes from /tree.json (same shape as the
-// library's documented format, with fully bidirectional rels).
+// Served at /person/{id}/tree and /tree. Data comes from /tree.json.
 const cont = document.getElementById('chart');
 if (cont && window.f3) {
   const focusId = cont.dataset.focusId;
   const gens = Number(cont.dataset.gens || 4);
+  const orient = cont.dataset.orient === 'h' ? 'h' : 'v';
 
   main().catch(err => {
     console.error(err);
@@ -24,11 +24,24 @@ if (cont && window.f3) {
     card.setStyle('imageRect');
     card.setCardDisplay([['first name', 'last name'], ['years']]);
 
+    // Layout: vertical (ancestors ↑ / descendants ↓) or horizontal
+    // (ancestors ← / descendants →). Horizontal suits descendant-heavy or
+    // large trees, which otherwise collapse into a single vertical line.
+    if (orient === 'h') {
+      chart.setOrientationHorizontal();
+      // In horizontal mode: x spacing = gap between generations (wide, to
+      // fit 240px cards); y spacing = gap between siblings.
+      chart.setCardXSpacing(280);
+      chart.setCardYSpacing(95);
+    } else {
+      chart.setCardXSpacing(260); // sibling gap
+      chart.setCardYSpacing(140); // generation gap
+    }
+
     // gens=0 means "everything" (full tree) — render up to a deep ceiling.
     const depth = gens <= 0 ? 30 : gens;
     chart.setProgenyDepth(depth).setAncestryDepth(depth);
     chart.setTransitionTime(400);
-    chart.setCardXSpacing(250).setCardYSpacing(130);
     chart.updateTree({ initial: true });
 
     // Click = re-center on that person; double-click = open profile page.
@@ -55,7 +68,9 @@ if (cont && window.f3) {
       const name = (d.data['first name'] + ' ' + (d.data['last name'] || '')).trim();
       document.getElementById('focusName').textContent = name;
       document.getElementById('focusLink').href = '/person/' + d.data.id;
-      history.replaceState(null, '', '/tree?person=' + d.data.id + '&gens=' + gens);
+      const u = new URL(location.href);
+      u.searchParams.set('person', d.data.id);
+      history.replaceState(null, '', u.pathname + u.search);
     }
   }
 }
