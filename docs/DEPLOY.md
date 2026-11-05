@@ -15,7 +15,11 @@ mise docker                        # builds image "genealogy-tree" (or: docker c
 docker compose up -d
 ```
 
-Then bootstrap the first (admin) account:
+Then open the site in a browser — with **no users yet, every page funnels to
+the one-time `/setup` screen** where you create the first admin (username +
+password of your choosing). After that the setup page closes automatically.
+
+Alternative (CLI / headless):
 
 ```sh
 docker compose exec familytree /familytree admin-create -u admin -p 'LongPasswordHere'

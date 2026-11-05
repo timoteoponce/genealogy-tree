@@ -26,12 +26,18 @@ mise docker         # build the deployment image
 
 ```text
 familytree serve                          # web server (default)
-familytree admin-create -u admin -p 'pw'  # bootstrap an account (role via -role)
+familytree admin-create -u admin -p 'pw'  # optional CLI bootstrap (there is also a /setup page on first run)
 familytree import family_tree.ged         # replace tree with GEDCOM (CLI)
 familytree backup /path/backup.db         # online consistent SQLite copy
 familytree healthcheck -port 8080         # used by the Docker HEALTHCHECK
 familytree version
 ```
+
+### First run, no users
+
+The app ships with **no users**. On a fresh database every page redirects to
+the one-time `/setup` screen to create the first admin (username + password).
+Once one account exists, `/setup` closes permanently.
 
 ## Features
 

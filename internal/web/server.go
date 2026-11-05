@@ -63,6 +63,10 @@ func (s *Server) Router() http.Handler {
 	})
 	mux.Handle("GET /static/", http.FileServerFS(staticFS))
 
+	// First-run setup: fixes the admin account when no users exist yet.
+	mux.HandleFunc("GET /setup", s.setupPage)
+	mux.HandleFunc("POST /setup", s.setupSubmit)
+
 	mux.HandleFunc("GET /login", s.loginPage)
 	mux.HandleFunc("POST /login", s.loginSubmit)
 	mux.HandleFunc("POST /logout", s.wrap("viewer", s.logout))

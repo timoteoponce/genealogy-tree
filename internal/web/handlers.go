@@ -18,6 +18,11 @@ func (s *Server) loginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
+	// Fresh deployment? The login page doesn't exist until an admin does.
+	if n, _ := qOf(s, r).CountUsers(r.Context()); n == 0 {
+		http.Redirect(w, r, "/setup", http.StatusFound)
+		return
+	}
 	if next := r.URL.Query().Get("next"); next != "" {
 		data["Next"] = next
 	}
