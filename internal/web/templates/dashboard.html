@@ -1,4 +1,15 @@
 {{template "header" .}}
+<section class="hero">
+  <div>
+    <h1>Welcome to {{.SiteName}}</h1>
+    <p class="muted">Browse and grow your family history — everyone is here.</p>
+  </div>
+  <div class="heroactions">
+    <a class="btn" href="/tree">🌳 Family tree</a>
+    <a class="btn" href="/people">People</a>
+  </div>
+</section>
+
 <section class="stats">
   <div class="statcard"><b>{{.PeopleCount}}</b><span>people</span></div>
   <div class="statcard"><b>{{.FamiliesCount}}</b><span>families</span></div>

@@ -62,7 +62,7 @@ Once one account exists, `/setup` closes permanently.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `DATA_DIR` | `./data` | Where `familytree.db` lives (mount a volume in production) |
+| `DATA_DIR` | `.data` | Where `familytree.db` lives (mount a volume in production; in Docker it's `/data`) |
 | `PORT` | `8080` | HTTP listen port |
 | `APP_COOKIE_SECURE` | `false` | Set `true` behind an HTTPS reverse proxy |
 

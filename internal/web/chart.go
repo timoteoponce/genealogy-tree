@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"genealogy-tree/internal/models"
 	"genealogy-tree/internal/store"
@@ -78,6 +79,62 @@ func descendantsOf(ctx context.Context, q *store.Queries, start models.Person, m
 	}
 	walk(start, 1)
 	return rows
+}
+
+// fullTreePage handles GET /tree: the whole-tree view (all reachable
+// people), centered on the largest root by default. A root picker lets you
+// jump between disconnected branches. Accepts ?person= to pick a root.
+func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := qOf(s, r)
+
+	roots, err := s.rootStats(ctx)
+	if err != nil || len(roots) == 0 {
+		data := s.baseData(r, "Family tree")
+		data["Empty"] = true
+		s.render(w, "tree.html", http.StatusOK, data)
+		return
+	}
+
+	// Chosen root: ?person= (must be a valid root) or the largest component.
+	root := roots[0]
+	if raw := r.URL.Query().Get("person"); raw != "" {
+		if id, err := strconv.ParseInt(raw, 10, 64); err == nil && id > 0 {
+			for _, ri := range roots {
+				if ri.ID == id {
+					root = ri
+					break
+				}
+			}
+		}
+	}
+	person, err := q.PersonByID(ctx, root.ID)
+	if err != nil {
+		person, err = q.PersonByID(ctx, roots[0].ID)
+		if err != nil {
+			data := s.baseData(r, "Family tree")
+			data["Empty"] = true
+			s.render(w, "tree.html", http.StatusOK, data)
+			return
+		}
+	}
+
+	data := s.baseData(r, "Family tree")
+	data["Person"] = person
+	data["Gens"] = 0 // 0 = everything reachable
+	data["FullTree"] = true
+	data["Roots"] = roots
+	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
+
+	// Name lookup for the root picker.
+	idx := map[int64]models.Person{}
+	for _, ri := range roots {
+		if p, err := q.PersonByID(ctx, ri.ID); err == nil {
+			idx[ri.ID] = p
+		}
+	}
+	data["RootIndex"] = idx
+	s.render(w, "tree.html", http.StatusOK, data)
 }
 
 // treePage renders the tree view: the interactive family-chart by default,

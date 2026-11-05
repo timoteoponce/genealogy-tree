@@ -1,4 +1,10 @@
 {{template "header" .}}
+{{if .Empty}}
+<section>
+  <h1>Family tree</h1>
+  <p class="muted">Nothing to show yet — an admin can <a href="/admin/import">import a GEDCOM</a> to populate the tree.</p>
+</section>
+{{else}}
 {{if not (eq .View "list")}}
 <link rel="stylesheet" href="/static/vendor/family-chart.css">
 <link rel="stylesheet" href="/static/tree.css">
@@ -7,19 +13,31 @@
 <section class="personhead treepage-head">
   <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="56" height="56">
   <div class="pheadinfo">
-    <h1>Family tree</h1>
+    <h1>{{if .FullTree}}Family tree{{else}}Family tree{{end}}</h1>
     <p class="focusbar" id="focusbar">
       Focused on: <b id="focusName">{{.Person.DisplayName}}</b>
       <a class="btn small" id="focusLink" href="/person/{{.Person.ID}}">Open profile</a>
-      <span class="muted">generations:</span>
-      {{range $g := .GensChoices}}
-        {{if eq $g $.Gens}}<span class="badge">{{$g}}</span>
-        {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}{{if eq $.View "list"}}&amp;view=list{{end}}">{{$g}}</a>{{end}}
-      {{end}}
-      {{if eq .View "list"}}
-        <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}">Chart view</a>
+      {{if .FullTree}}
+        <label class="muted">root:
+          <select id="rootSelect" onchange="location='/tree?person='+this.value">
+            {{range .Roots}}
+            <option value="{{.ID}}"{{if eq .ID $.Person.ID}} selected{{end}}>
+              {{(index $.RootIndex .ID).DisplayName}} · {{.Reach}} people
+            </option>
+            {{end}}
+          </select>
+        </label>
       {{else}}
-        <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view=list">List view</a>
+        <span class="muted">generations:</span>
+        {{range $g := .GensChoices}}
+          {{if eq $g $.Gens}}<span class="badge">{{$g}}</span>
+          {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}{{if eq $.View "list"}}&amp;view=list{{end}}">{{$g}}</a>{{end}}
+        {{end}}
+        {{if eq .View "list"}}
+          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}">Chart view</a>
+        {{else}}
+          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view=list">List view</a>
+        {{end}}
       {{end}}
       {{if .CanEdit}}<a class="btn small" href="/person/{{.Person.ID}}/edit">Edit this person</a>{{end}}
     </p>
@@ -66,5 +84,6 @@
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/vendor/family-chart.min.js"></script>
 <script type="module" src="/static/tree.js"></script>
+{{end}}
 {{end}}
 {{template "footer" .}}

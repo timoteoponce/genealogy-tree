@@ -24,7 +24,9 @@ if (cont && window.f3) {
     card.setStyle('imageRect');
     card.setCardDisplay([['first name', 'last name'], ['years']]);
 
-    chart.setProgenyDepth(gens).setAncestryDepth(gens);
+    // gens=0 means "everything" (full tree) — render up to a deep ceiling.
+    const depth = gens <= 0 ? 30 : gens;
+    chart.setProgenyDepth(depth).setAncestryDepth(depth);
     chart.setTransitionTime(400);
     chart.setCardXSpacing(250).setCardYSpacing(130);
     chart.updateTree({ initial: true });

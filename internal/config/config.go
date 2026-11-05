@@ -16,7 +16,9 @@ import (
 // Config is the fully-resolved application configuration.
 type Config struct {
 	// DataDir is the directory that contains the SQLite database and
-	// anything else that must survive restarts. Default: "./data".
+	// anything else that must survive restarts. Default: ".data" (hidden in
+	// the repo root; matches the mise.toml dev env, so `mise dev` and a
+	// directly-run binary always open the SAME database file).
 	DataDir string
 	// DBPath is the full path of the SQLite database file.
 	DBPath string
@@ -33,7 +35,7 @@ type Config struct {
 func Load() (Config, error) {
 	c := Config{}
 
-	c.DataDir = getenv("DATA_DIR", "./data")
+	c.DataDir = getenv("DATA_DIR", ".data")
 	c.DataDir = strings.TrimSuffix(c.DataDir, "/")
 	c.DBPath = filepath.Join(c.DataDir, "familytree.db")
 

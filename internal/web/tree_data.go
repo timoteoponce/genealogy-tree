@@ -51,9 +51,16 @@ func chartGender(sex string) string {
 // chartDataOf builds the tree-data JSON around a focus person.
 //
 // Included nodes: the focus, up to `gens` generations of ancestors, `gens`
-// generations of descendants, and every spouse of anyone included.
+// generations of descendants, and every spouse of anyone included. gens <= 0
+// means "everything reachable" (capped internally; the seen-set prevents
+// cycles, so this is safe on real trees).
 func (s *Server) chartDataOf(ctx context.Context, focus models.Person, gens int) []chartNode {
 	q := s.St.Queries()
+
+	// Unlimited: cap the BFS depth at something far beyond any real tree.
+	if gens <= 0 {
+		gens = 200
+	}
 
 	families, _ := q.AllFamilies(ctx)
 	links, _ := q.AllChildLinks(ctx)
@@ -253,7 +260,8 @@ func chartRelsAreSymmetric(nodes []chartNode) error {
 	return nil
 }
 
-// treeData serves GET /tree.json?person={id}&gens={n}.
+// treeData serves GET /tree.json?person={id}&gens={n}. gens=0 means "all
+// reachable"; negative/absent falls back to the default depth.
 func (s *Server) treeData(w http.ResponseWriter, r *http.Request) {
 	focusID, err := strconv.ParseInt(r.URL.Query().Get("person"), 10, 64)
 	if err != nil || focusID <= 0 {
@@ -265,9 +273,99 @@ func (s *Server) treeData(w http.ResponseWriter, r *http.Request) {
 		s.renderError(w, r, http.StatusNotFound, "person not found")
 		return
 	}
-	gens := clampInt(atoiDefault(r.URL.Query().Get("gens"), defaultTreeDepth), 1, 8)
+
+	gens := defaultTreeDepth
+	if raw := r.URL.Query().Get("gens"); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil && n >= 0 && n <= 200 {
+			gens = n
+		}
+	}
 	nodes := s.chartDataOf(r.Context(), person, gens)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	_ = WriteJSON(w, nodes)
+}
+
+// rootStats computes, for the "full tree" page, every person with no
+// recorded parents and how many people their descendant graph reaches.
+// The roots are returned largest-component-first so the default view shows
+// the biggest tree.
+func (s *Server) rootStats(ctx context.Context) ([]rootInfo, error) {
+	q := s.St.Queries()
+	families, _ := q.AllFamilies(ctx)
+	links, _ := q.AllChildLinks(ctx)
+
+	famsByPartner := map[int64][]int64{}
+	kidsByFam := map[int64][]int64{}
+	for _, f := range families {
+		for _, pid := range []*int64{f.Partner1ID, f.Partner2ID} {
+			if pid != nil {
+				famsByPartner[*pid] = append(famsByPartner[*pid], f.ID)
+			}
+		}
+	}
+	for _, l := range links {
+		kidsByFam[l.FamilyID] = append(kidsByFam[l.FamilyID], l.PersonID)
+	}
+
+	// Roots = people who are never a child in any child_link.
+	allIDs, _ := q.AllIDsPeople(ctx)
+	isChild := map[int64]bool{}
+	for _, l := range links {
+		isChild[l.PersonID] = true
+	}
+	var roots []int64
+	for _, id := range allIDs {
+		if !isChild[id] {
+			roots = append(roots, id)
+		}
+	}
+	// If the data only contains descendants (everyone has parents), fall back
+	// to the lowest id so we still have a starting point.
+	if len(roots) == 0 && len(allIDs) > 0 {
+		roots = []int64{allIDs[0]}
+	}
+
+	out := make([]rootInfo, 0, len(roots))
+	for _, r := range roots {
+		out = append(out, rootInfo{ID: r, Reach: reachableCount(r, famsByPartner, kidsByFam)})
+	}
+	slices.SortFunc(out, func(a, b rootInfo) int {
+		if a.Reach != b.Reach {
+			if a.Reach > b.Reach {
+				return -1
+			}
+			return 1
+		}
+		if a.ID < b.ID {
+			return -1
+		}
+		return 1
+	})
+	return out, nil
+}
+
+// rootInfo is one candidate root for the full-tree view.
+type rootInfo struct {
+	ID    int64
+	Reach int64
+}
+
+// reachableCount counts how many distinct people a root reaches downward.
+func reachableCount(root int64, famsByPartner map[int64][]int64, kidsByFam map[int64][]int64) int64 {
+	seen := map[int64]bool{root: true}
+	stack := []int64{root}
+	for len(stack) > 0 {
+		pid := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		for _, famID := range famsByPartner[pid] {
+			for _, kid := range kidsByFam[famID] {
+				if !seen[kid] {
+					seen[kid] = true
+					stack = append(stack, kid)
+				}
+			}
+		}
+	}
+	return int64(len(seen))
 }
