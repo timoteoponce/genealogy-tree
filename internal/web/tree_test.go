@@ -89,3 +89,54 @@ func TestFullTreeEmptyDB(t *testing.T) {
 		t.Fatalf("empty tree state: %d %s", status, body)
 	}
 }
+
+// TestFanAndGraphEndpoints covers /fan.json (ancestor tree) and /graph.json
+// (everyone + links).
+func TestFanAndGraphEndpoints(t *testing.T) {
+	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
+
+	// Fan: Samuel (id 3) has parents John + Mary.
+	status, body := get(t, e.admin, e.ts.URL+"/fan.json?person=3")
+	if status != http.StatusOK {
+		t.Fatalf("fan.json: %d", status)
+	}
+	if !strings.Contains(body, `"id":"3"`) || !strings.Contains(body, `"id":"1"`) || !strings.Contains(body, `"id":"2"`) {
+		t.Fatalf("fan.json should nest parents under focus: %s", body)
+	}
+
+	// Graph: 3 nodes, spouse link (1-2) + parent links (1-3, 2-3).
+	status, body = get(t, e.admin, e.ts.URL+"/graph.json")
+	if status != http.StatusOK {
+		t.Fatalf("graph.json: %d", status)
+	}
+	if !strings.Contains(body, `"type":"spouse"`) || !strings.Contains(body, `"type":"parent"`) {
+		t.Fatalf("graph.json missing link types: %s", body)
+	}
+	for _, want := range []string{`"id":"1"`, `"id":"2"`, `"id":"3"`} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("graph.json missing node %s: %s", want, body)
+		}
+	}
+}
+
+// TestViewSwitcherRendersEachView: ?view=fan and ?view=graph render their
+// own containers and scripts.
+func TestViewSwitcherRendersEachView(t *testing.T) {
+	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
+
+	_, body := get(t, e.admin, e.ts.URL+"/person/3/tree?view=fan")
+	if !strings.Contains(body, `id="fan"`) || !strings.Contains(body, "fan.js") {
+		t.Fatalf("fan view markup missing: %s", body)
+	}
+
+	_, body = get(t, e.admin, e.ts.URL+"/person/3/tree?view=graph")
+	if !strings.Contains(body, `id="graph"`) || !strings.Contains(body, "graph.js") {
+		t.Fatalf("graph view markup missing: %s", body)
+	}
+
+	// Default view for a tiny tree is still the standard chart.
+	_, body = get(t, e.admin, e.ts.URL+"/person/3/tree")
+	if !strings.Contains(body, `id="chart" class="f3"`) {
+		t.Fatalf("small tree should default to the family-chart: %s", body)
+	}
+}

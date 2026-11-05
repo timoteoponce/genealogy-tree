@@ -2,6 +2,11 @@
    win. Turns the chart into a clean light "node graph" instead of the
    library's dark bubble theme. */
 
+/* Chart cursor: grab while panning, pointer over clickable cards. */
+#chart, #fan, #graph { cursor: grab; }
+#chart:active, #fan:active, #graph:active { cursor: grabbing; }
+#chart .card, #fan .fan-nodes g, #graph .graph-nodes g { cursor: pointer; }
+
 .f3 {
   --female-color: #f6e6e9;
   --male-color: #e3eef4;

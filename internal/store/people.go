@@ -185,6 +185,26 @@ func (q *Queries) CountPeople(ctx context.Context) (int64, error) {
 	return n, err
 }
 
+// AllPeople loads every person (for the force-directed "everyone" graph).
+// Ordered by id; fine for small/medium datasets (the graph endpoint is only
+// surfaced when the tree is large).
+func (q *Queries) AllPeople(ctx context.Context) ([]models.Person, error) {
+	rows, err := q.DB.QueryContext(ctx, `SELECT `+personCols+` FROM people ORDER BY id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []models.Person{}
+	for rows.Next() {
+		p, err := scanPerson(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
+}
+
 // LivingCount returns how many people are marked living.
 func (q *Queries) LivingCount(ctx context.Context) (int64, error) {
 	var n int64

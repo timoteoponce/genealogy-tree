@@ -127,6 +127,14 @@ func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
 	data["Orient"] = orientParam(r, "h") // descendant-heavy → horizontal by default
 
+	// Adaptive view: default by how many people are in scope.
+	var nodeCount int64
+	if n, err := q.CountPeople(ctx); err == nil {
+		nodeCount = n
+	}
+	data["NodeCount"] = nodeCount
+	data["View"] = resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, true))
+
 	// Name lookup for the root picker.
 	idx := map[int64]models.Person{}
 	for _, ri := range roots {
@@ -161,8 +169,12 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 	data["Gens"] = depth
 	data["GensChoices"] = []int{2, 3, 4, 5, 6}
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
-	data["View"] = r.URL.Query().Get("view")
 	data["Orient"] = orientParam(r, "v") // classic pedigree: vertical by default
+
+	// Adaptive view default from how many people the tree reaches.
+	nodeCount := int64(len(s.chartDataOf(ctx, person, depth)))
+	data["NodeCount"] = nodeCount
+	data["View"] = resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, false))
 
 	if data["View"] == "list" {
 		data["Ancestors"] = ancestorsOf(ctx, q, person, depth)

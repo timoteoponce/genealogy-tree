@@ -81,6 +81,8 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /person/{id}/tree", s.wrap("viewer", s.treePage))
 	mux.HandleFunc("GET /tree", s.wrap("viewer", s.fullTreePage))
 	mux.HandleFunc("GET /tree.json", s.wrap("viewer", s.treeData))
+	mux.HandleFunc("GET /fan.json", s.wrap("viewer", s.fanData))
+	mux.HandleFunc("GET /graph.json", s.wrap("viewer", s.graphData))
 
 	mux.HandleFunc("POST /person/{id}/media", s.wrap("editor", s.personMediaUpload))
 	mux.HandleFunc("POST /media/{id}/profile", s.wrap("editor", s.mediaSetProfile))

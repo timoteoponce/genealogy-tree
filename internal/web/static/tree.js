@@ -5,6 +5,7 @@ if (cont && window.f3) {
   const focusId = cont.dataset.focusId;
   const gens = Number(cont.dataset.gens || 4);
   const orient = cont.dataset.orient === 'h' ? 'h' : 'v';
+  const mode = cont.dataset.mode === 'compact' ? 'compact' : 'tree';
 
   main().catch(err => {
     console.error(err);
@@ -20,9 +21,15 @@ if (cont && window.f3) {
     const chart = f3.createChart('#chart', data);
 
     // Node cards: photo + name + life years (imageRect = photo-left node).
+    // "compact" mode uses small circular photo chips for dense trees.
     const card = chart.setCardHtml();
-    card.setStyle('imageRect');
-    card.setCardDisplay([['first name', 'last name'], ['years']]);
+    if (mode === 'compact') {
+      card.setStyle('imageCircle');
+      card.setCardDisplay([['first name', 'last name']]);
+    } else {
+      card.setStyle('imageRect');
+      card.setCardDisplay([['first name', 'last name'], ['years']]);
+    }
 
     // Layout: vertical (ancestors ↑ / descendants ↓) or horizontal
     // (ancestors ← / descendants →). Horizontal suits descendant-heavy or
@@ -31,11 +38,11 @@ if (cont && window.f3) {
       chart.setOrientationHorizontal();
       // In horizontal mode: x spacing = gap between generations (wide, to
       // fit 240px cards); y spacing = gap between siblings.
-      chart.setCardXSpacing(280);
-      chart.setCardYSpacing(95);
+      chart.setCardXSpacing(mode === 'compact' ? 150 : 280);
+      chart.setCardYSpacing(mode === 'compact' ? 70 : 95);
     } else {
-      chart.setCardXSpacing(260); // sibling gap
-      chart.setCardYSpacing(140); // generation gap
+      chart.setCardXSpacing(mode === 'compact' ? 110 : 260);
+      chart.setCardYSpacing(mode === 'compact' ? 110 : 140);
     }
 
     // gens=0 means "everything" (full tree) — render up to a deep ceiling.
