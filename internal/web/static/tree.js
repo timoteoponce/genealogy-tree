@@ -19,12 +19,14 @@ if (cont && window.f3) {
 
     const chart = f3.createChart('#chart', data);
 
-    // HTML cards: photo avatar + name + life years.
+    // Node cards: photo + name + life years (imageRect = photo-left node).
     const card = chart.setCardHtml();
+    card.setStyle('imageRect');
     card.setCardDisplay([['first name', 'last name'], ['years']]);
 
     chart.setProgenyDepth(gens).setAncestryDepth(gens);
     chart.setTransitionTime(400);
+    chart.setCardXSpacing(250).setCardYSpacing(130);
     chart.updateTree({ initial: true });
 
     // Click = re-center on that person; double-click = open profile page.

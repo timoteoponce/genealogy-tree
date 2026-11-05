@@ -1,0 +1,92 @@
+/* genealogy-tree tree overrides — loaded AFTER family-chart.css so these
+   win. Turns the chart into a clean light "node graph" instead of the
+   library's dark bubble theme. */
+
+.f3 {
+  --female-color: #f6e6e9;
+  --male-color: #e3eef4;
+  --genderless-color: #ece9e3;
+  --background-color: transparent;
+  --text-color: #2c2a26;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Node card container */
+.f3 div.card .card-inner {
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.f3 div.card .card-inner:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+  transform: translateY(-1px);
+}
+
+/* Photo-left node layout */
+.f3 div.card-image-rect {
+  width: 240px;
+  min-height: 64px;
+  gap: 12px;
+  padding: 9px;
+  align-items: center;
+}
+.f3 div.card-image-rect img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #dedbd3;
+  flex: 0 0 auto;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+.f3 div.card-image-rect .card-label {
+  text-align: left;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #2c2a26;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.f3 div.card-image-rect .card-label div:nth-child(2) {
+  font-weight: 400;
+  color: #8a8577;
+  font-size: 0.85em;
+}
+
+/* Gender accents: soft tint + colored left edge instead of a full wash */
+.f3 div.card-male .card-inner {
+  background-color: var(--male-color);
+  border-left: 4px solid #7a9fb0;
+}
+.f3 div.card-female .card-inner {
+  background-color: var(--female-color);
+  border-left: 4px solid #c48a92;
+}
+.f3 div.card-genderless .card-inner {
+  background-color: var(--genderless-color);
+  border-left: 4px solid #b7b2a7;
+}
+
+/* Focus (main) card */
+.f3 div.card-inner.f3-path-to-main {
+  outline: 3px solid #3f7d4e;
+  outline-offset: 2px;
+}
+.f3 .card-main-outline {
+  stroke: #3f7d4e;
+}
+
+/* Connectors: subtle curved links */
+.f3 .link {
+  stroke: #b7c6cf;
+}
+.f3 .link.f3-path-to-main {
+  stroke: #5b7f92;
+}
+
+/* Slightly larger card text */
+.f3 div.card .card-label {
+  font-size: 14px;
+}

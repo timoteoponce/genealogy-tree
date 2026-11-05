@@ -195,6 +195,47 @@ func (s *Server) familyPage(w http.ResponseWriter, r *http.Request) {
 
 // -- media serving -------------------------------------------------------------
 
+// personPhoto serves GET /person/{id}/thumb: the person's profile photo
+// thumbnail, or a neutral placeholder silhouette when they have none. This
+// is the canonical avatar URL used everywhere (lists, profile, tree nodes),
+// so no one ever sees a broken-image icon.
+func (s *Server) personPhoto(w http.ResponseWriter, r *http.Request) {
+	id, err := parseID(r)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	q := qOf(s, r)
+	if _, err := q.PersonByID(r.Context(), id); err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	photoID, _ := q.ProfilePhotoID(r.Context(), id)
+	if photoID > 0 {
+		if d, err := q.MediaData(r.Context(), photoID); err == nil && len(d.Thumb) > 0 {
+			// thumbs are always encoded JPEG, regardless of the original type
+			w.Header().Set("Content-Type", "image/jpeg")
+			w.Header().Set("Cache-Control", "private, max-age=86400")
+			w.Write(d.Thumb)
+			return
+		}
+	}
+	servePlaceholder(w)
+}
+
+// servePlaceholder writes the embedded silhouette SVG with a 200 status.
+func servePlaceholder(w http.ResponseWriter) {
+	body, err := staticFS.ReadFile("static/placeholder.svg")
+	if err != nil {
+		http.Error(w, "placeholder missing", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "image/svg+xml; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Write(body)
+}
+
 func (s *Server) mediaThumb(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
@@ -206,7 +247,7 @@ func (s *Server) mediaThumb(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/static/placeholder.svg", http.StatusFound)
 		return
 	}
-	w.Header().Set("Content-Type", contentTypeOrDefault(d.Mime, "image/jpeg"))
+	w.Header().Set("Content-Type", "image/jpeg") // thumbs are always JPEG
 	w.Header().Set("Cache-Control", "private, max-age=86400")
 	w.Write(d.Thumb)
 }

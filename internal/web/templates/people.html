@@ -12,7 +12,7 @@
     <tr><th></th><th>Name</th><th>Born</th><th>Died</th><th></th></tr>
     {{range .People}}
     <tr>
-      <td class="avatarcell"><img src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="40" height="40"></td>
+      <td class="avatarcell"><img src="/person/{{.Person.ID}}/thumb" alt="" width="40" height="40"></td>
       <td><a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a></td>
       <td>{{with .Person.BirthYear}}{{.}}{{end}} <span class="muted">{{.Person.BirthPlace}}</span></td>
       <td>{{with .Person.DeathYear}}{{.}}{{end}} {{if .Person.Living}}<span class="badge living">living</span>{{end}}</td>

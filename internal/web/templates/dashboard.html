@@ -12,7 +12,7 @@
   <ul class="peoplelist">
     {{range .Recent}}
     <li>
-      <a class="avatarlink" href="/person/{{.Person.ID}}"><img src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="48" height="48"></a>
+      <a class="avatarlink" href="/person/{{.Person.ID}}"><img src="/person/{{.Person.ID}}/thumb" alt="" width="48" height="48"></a>
       <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b> <span class="muted">{{.Person.Years}}</span></a>
     </li>
     {{end}}

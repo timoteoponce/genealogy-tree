@@ -77,6 +77,7 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /family/{id}", s.wrap("viewer", s.familyPage))
 	mux.HandleFunc("GET /media/{id}/thumb", s.wrap("viewer", s.mediaThumb))
 	mux.HandleFunc("GET /media/{id}/full", s.wrap("viewer", s.mediaFull))
+	mux.HandleFunc("GET /person/{id}/thumb", s.wrap("viewer", s.personPhoto))
 	mux.HandleFunc("GET /person/{id}/tree", s.wrap("viewer", s.treePage))
 	mux.HandleFunc("GET /tree.json", s.wrap("viewer", s.treeData))
 

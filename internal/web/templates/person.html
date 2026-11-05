@@ -1,7 +1,7 @@
 {{template "header" .}}
 <section class="personpage">
   <div class="personhead">
-    <img class="portrait" src="/media/{{.ProfilePhotoID}}/thumb" alt="" width="128" height="128">
+    <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="128" height="128">
     <div class="pheadinfo">
       <h1>{{.Person.DisplayName}}</h1>
       <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">living</span>{{end}}</p>

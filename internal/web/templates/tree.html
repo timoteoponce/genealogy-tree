@@ -1,10 +1,11 @@
 {{template "header" .}}
-{{if eq .View "list"}}
+{{if not (eq .View "list")}}
 <link rel="stylesheet" href="/static/vendor/family-chart.css">
+<link rel="stylesheet" href="/static/tree.css">
 {{end}}
 
 <section class="personhead treepage-head">
-  <img class="portrait" src="/media/{{.PhotoID}}/thumb" alt="" width="56" height="56">
+  <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="56" height="56">
   <div class="pheadinfo">
     <h1>Family tree</h1>
     <p class="focusbar" id="focusbar">
