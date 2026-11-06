@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"genealogy-tree/internal/models"
@@ -171,29 +172,46 @@ func famByID(fams []models.Family, id int64) (models.Family, bool) {
 // --- adaptive view default -------------------------------------------------
 
 // defaultView picks the starting visualization from how many people are in
-// scope, so the standard tree is used while it's readable and denser
-// layouts take over when it gets too big.
+// scope: the standard tree while it's readable, then the radial fan (deep
+// ancestors) or the force graph (whole dataset) once it gets too big.
+// "compact" is no longer a separate user-facing view — the tree view simply
+// switches to compact photo-chip cards automatically when it's large.
 func defaultView(nodeCount int64, isFull bool) string {
-	switch {
-	case nodeCount <= 20:
+	if nodeCount <= 200 {
 		return "tree"
-	case nodeCount <= 200:
-		return "compact"
-	default:
-		if isFull {
-			return "graph" // many branches: only the force graph shows them all
-		}
-		return "fan" // deep ancestors: the radial fan scales best
 	}
+	if isFull {
+		return "graph" // many branches: only the force graph shows them all
+	}
+	return "fan" // deep ancestors: the radial fan scales best
 }
 
 // resolveView normalizes the ?view= query into one of the valid chart modes
-// (tree|compact|fan|graph|list), or falls back to the adaptive default.
+// (tree|fan|graph|list), or falls back to the adaptive default.
 func resolveView(query, fallback string) string {
 	switch query {
-	case "tree", "compact", "fan", "graph", "list":
+	case "tree", "fan", "graph", "list":
 		return query
 	default:
 		return fallback
 	}
+}
+
+// pickerPeople returns every person sorted by display name, for the
+// searchable "focus a person" autocomplete (and relationship forms).
+func (s *Server) pickerPeople(ctx context.Context) []models.Person {
+	people, _ := s.St.Queries().AllPeople(ctx)
+	slices.SortFunc(people, func(a, b models.Person) int {
+		if an, bn := a.DisplayName(), b.DisplayName(); an != bn {
+			if an < bn {
+				return -1
+			}
+			return 1
+		}
+		if a.ID < b.ID {
+			return -1
+		}
+		return 1
+	})
+	return people
 }

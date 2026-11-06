@@ -5,7 +5,7 @@ if (cont && window.f3) {
   const focusId = cont.dataset.focusId;
   const gens = Number(cont.dataset.gens || 4);
   const orient = cont.dataset.orient === 'h' ? 'h' : 'v';
-  const mode = cont.dataset.mode === 'compact' ? 'compact' : 'tree';
+  const mode = cont.dataset.compact === 'true' ? 'compact' : 'tree';
 
   main().catch(err => {
     console.error(err);

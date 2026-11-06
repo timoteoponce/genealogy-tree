@@ -5,62 +5,67 @@
   <p class="muted">Nothing to show yet — an admin can <a href="/admin/import">import a GEDCOM</a> to populate the tree.</p>
 </section>
 {{else}}
-{{if or (eq .View "tree") (eq .View "compact")}}
+{{if eq .View "tree"}}
 <link rel="stylesheet" href="/static/vendor/family-chart.css">
 <link rel="stylesheet" href="/static/tree.css">
 {{end}}
 {{if eq .View "fan"}}<link rel="stylesheet" href="/static/fan.css">{{end}}
 {{if eq .View "graph"}}<link rel="stylesheet" href="/static/graph.css">{{end}}
 
-<section class="personhead treepage-head">
-  <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="56" height="56">
-  <div class="pheadinfo">
-    <h1>Family tree</h1>
-    <p class="focusbar" id="focusbar">
-      Focused on: <b id="focusName">{{.Person.DisplayName}}</b>
-      <a class="btn small" id="focusLink" href="/person/{{.Person.ID}}">Open profile</a>
+{{$v := .View}}{{$base := .TreeBase}}{{$p := .Person.ID}}{{$q := .Gens}}{{$orient := .Orient}}
 
-      <span class="muted">view:</span>
-      {{$v := .View}}{{$p := .Person.ID}}{{$q := .Gens}}
-      {{range $name := list "tree" "compact" "fan" "graph" "list"}}
-        {{if eq $name $v}}<span class="badge">{{$name}}</span>
-        {{else}}<a class="small" href="/tree?person={{$p}}&amp;gens={{$q}}&amp;view={{$name}}{{if eq $name "tree"}}{{if eq $.Orient "h"}}&amp;orient=h{{end}}{{end}}">{{$name}}</a>{{end}}
-      {{end}}
-
-      {{if .FullTree}}
-        <label class="muted">root:
-          <select id="rootSelect" onchange="location='/tree?person='+this.value+'&amp;view={{.View}}'">
-            {{range .Roots}}
-            <option value="{{.ID}}"{{if eq .ID $.Person.ID}} selected{{end}}>
-              {{(index $.RootIndex .ID).DisplayName}} · {{.Reach}} people
-            </option>
-            {{end}}
-          </select>
-        </label>
-      {{else}}
-        {{if or (eq .View "tree") (eq .View "compact")}}
-        <span class="muted">generations:</span>
-        {{range $g := .GensChoices}}
-          {{if eq $g $.Gens}}<span class="badge">{{$g}}</span>
-          {{else}}<a class="small gens-link" href="/tree?person={{$.Person.ID}}&amp;gens={{$g}}&amp;view={{$.View}}{{if eq $.Orient "h"}}&amp;orient=h{{end}}">{{$g}}</a>{{end}}
-        {{end}}
-        {{end}}
-      {{end}}
-
-      {{if or (eq .View "tree") (eq .View "compact")}}
-        {{if eq .Orient "h"}}
-          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view={{.View}}">Vertical</a>
-        {{else}}
-          <a class="btn small" href="/tree?person={{.Person.ID}}&gens={{.Gens}}&amp;view={{.View}}&amp;orient=h">Horizontal</a>
-        {{end}}
-      {{end}}
-      {{if .CanEdit}}<a class="btn small" href="/person/{{.Person.ID}}/edit">Edit this person</a>{{end}}
-    </p>
-    {{if gt .NodeCount 20}}<p class="muted small">Showing {{.NodeCount}} people in <b>{{.View}}</b> view — switch views above for a denser layout.</p>{{end}}
+<section class="treehead">
+  <div class="treehead-title">
+    <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="48" height="48">
+    <div>
+      <h1>Family tree</h1>
+      <p class="muted small">Focused on <b id="focusName">{{.Person.DisplayName}}</b>
+        · <a id="focusLink" href="/person/{{.Person.ID}}">profile</a>
+        {{if .CanEdit}}· <a href="/person/{{.Person.ID}}/edit">edit</a>{{end}}
+      </p>
+    </div>
   </div>
+
+  <div class="toolbar">
+    <form class="picker" method="get" action="{{$base}}">
+      <input type="search" list="people-datalist" class="picker-input"
+             placeholder="Search for a person…" autocomplete="off"
+             data-picker="person" aria-label="Focus on a person">
+      <input type="hidden" name="person" value="">
+      <button type="submit" class="btn">Focus</button>
+    </form>
+    {{template "peopleDatalist" .}}
+
+    <div class="viewswitch" role="group" aria-label="Chart type">
+      {{range $name := list "tree" "fan" "graph" "list"}}
+        {{if eq $name $v}}<span class="seg active">{{$name}}</span>
+        {{else}}<a class="seg" href="{{$base}}?person={{$p}}{{if ne $q 0}}&amp;gens={{$q}}{{end}}&amp;view={{$name}}{{if and (eq $name "tree") (eq $orient "h")}}&amp;orient=h{{end}}">{{$name}}</a>{{end}}
+      {{end}}
+    </div>
+
+    {{if eq $v "tree"}}
+      {{if .FullTree}}
+        <span class="hint small muted">{{.NodeCount}} people · drag to pan · click a card to refocus</span>
+      {{else}}
+        <span class="gens small muted" aria-label="Generations">gens:
+          {{range $g := .GensChoices}}
+            {{if eq $g $q}}<span class="seg active">{{$g}}</span>
+            {{else}}<a class="seg" href="{{$base}}?person={{$p}}&amp;gens={{$g}}&amp;view=tree{{if eq $orient "h"}}&amp;orient=h{{end}}">{{$g}}</a>{{end}}
+          {{end}}
+        </span>
+      {{end}}
+      {{if eq $orient "h"}}
+        <a class="btn ghost small" href="{{$base}}?person={{$p}}{{if ne $q 0}}&gens={{$q}}{{end}}&amp;view=tree">Vertical</a>
+      {{else}}
+        <a class="btn ghost small" href="{{$base}}?person={{$p}}{{if ne $q 0}}&gens={{$q}}{{end}}&amp;view=tree&amp;orient=h">Horizontal</a>
+      {{end}}
+    {{end}}
+  </div>
+
+  {{if gt .NodeCount 20}}<p class="hint small muted">Showing {{.NodeCount}} people in <b>{{.View}}</b> view — use the search box above to focus on one person.</p>{{end}}
 </section>
 
-{{if eq .View "list"}}
+{{if eq $v "list"}}
 <div class="personcols">
   <div class="col">
     <h2>Ancestors</h2>
@@ -94,24 +99,24 @@
   </div>
 </div>
 
-{{else if or (eq .View "tree") (eq .View "compact")}}
+{{else if eq $v "tree"}}
 <section class="chartwrap">
-  <div id="chart" class="f3" data-focus-id="{{.Person.ID}}" data-gens="{{.Gens}}" data-orient="{{.Orient}}" data-mode="{{.View}}"></div>
+  <div id="chart" class="f3" data-focus-id="{{$p}}" data-gens="{{$q}}" data-orient="{{$orient}}" data-compact="{{.Compact}}"></div>
 </section>
 <script src="/static/vendor/d3.min.js"></script>
 <script src="/static/vendor/family-chart.min.js"></script>
 <script type="module" src="/static/tree.js"></script>
 
-{{else if eq .View "fan"}}
+{{else if eq $v "fan"}}
 <section class="chartwrap fanwrap">
-  <div id="fan" data-focus-id="{{.Person.ID}}" data-gens="{{.Gens}}"></div>
+  <div id="fan" data-focus-id="{{$p}}" data-gens="{{$q}}"></div>
 </section>
 <script src="/static/vendor/d3.min.js"></script>
 <script type="module" src="/static/fan.js"></script>
 
-{{else if eq .View "graph"}}
+{{else if eq $v "graph"}}
 <section class="chartwrap graphwrap">
-  <div id="graph" data-focus-id="{{.Person.ID}}"></div>
+  <div id="graph" data-focus-id="{{$p}}"></div>
 </section>
 <script src="/static/vendor/d3.min.js"></script>
 <script type="module" src="/static/graph.js"></script>

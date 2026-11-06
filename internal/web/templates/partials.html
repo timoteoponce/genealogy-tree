@@ -37,6 +37,7 @@
 <footer class="sitefooter">
   <span>genealogy-tree · single-binary family archive</span>
 </footer>
+<script type="module" src="/static/picker.js"></script>
 </body>
 </html>
 {{end}}
@@ -44,3 +45,7 @@
 {{define "personlink"}}<a href="/person/{{.ID}}">{{.DisplayName}}</a> <span class="muted">{{.Years}}</span>{{end}}
 {{define "personlink-short"}}<a href="/person/{{.ID}}">{{.DisplayName}}</a> <span class="muted">{{.Years}}</span>{{end}}
 {{define "personlink-inline"}}<a href="/person/{{.ID}}">{{.DisplayName}}</a> <span class="muted">{{.Years}}</span>{{end}}
+
+{{define "peopleDatalist"}}<datalist id="people-datalist">
+  {{range .People}}<option value="{{.DisplayName}}" data-id="{{.ID}}" label="{{.DisplayName}} · {{.Years}}"></option>{{end}}
+</datalist>{{end}}

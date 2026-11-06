@@ -82,8 +82,7 @@ func descendantsOf(ctx context.Context, q *store.Queries, start models.Person, m
 }
 
 // fullTreePage handles GET /tree: the whole-tree view (all reachable
-// people), centered on the largest root by default. A root picker lets you
-// jump between disconnected branches. Accepts ?person= to pick a root.
+// people), focused on any person via ?person= (default: the largest root).
 func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := qOf(s, r)
@@ -96,53 +95,46 @@ func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Chosen root: ?person= (must be a valid root) or the largest component.
-	root := roots[0]
+	// Focus: ?person=<any id> wins; otherwise the largest root.
+	var person models.Person
 	if raw := r.URL.Query().Get("person"); raw != "" {
 		if id, err := strconv.ParseInt(raw, 10, 64); err == nil && id > 0 {
-			for _, ri := range roots {
-				if ri.ID == id {
-					root = ri
-					break
-				}
-			}
+			person, _ = q.PersonByID(ctx, id)
 		}
 	}
-	person, err := q.PersonByID(ctx, root.ID)
-	if err != nil {
-		person, err = q.PersonByID(ctx, roots[0].ID)
-		if err != nil {
-			data := s.baseData(r, "Family tree")
-			data["Empty"] = true
-			s.render(w, "tree.html", http.StatusOK, data)
-			return
-		}
+	if person.ID == 0 {
+		person, _ = q.PersonByID(ctx, roots[0].ID)
+	}
+	if person.ID == 0 {
+		data := s.baseData(r, "Family tree")
+		data["Empty"] = true
+		s.render(w, "tree.html", http.StatusOK, data)
+		return
 	}
 
 	data := s.baseData(r, "Family tree")
 	data["Person"] = person
 	data["Gens"] = 0 // 0 = everything reachable
 	data["FullTree"] = true
-	data["Roots"] = roots
+	data["TreeBase"] = "/tree"
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
 	data["Orient"] = orientParam(r, "h") // descendant-heavy → horizontal by default
 
 	// Adaptive view: default by how many people are in scope.
-	var nodeCount int64
-	if n, err := q.CountPeople(ctx); err == nil {
-		nodeCount = n
-	}
+	nodeCount, _ := q.CountPeople(ctx)
+	view := resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, true))
 	data["NodeCount"] = nodeCount
-	data["View"] = resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, true))
+	data["View"] = view
+	data["Compact"] = view == "tree" && nodeCount > 20
 
-	// Name lookup for the root picker.
-	idx := map[int64]models.Person{}
-	for _, ri := range roots {
-		if p, err := q.PersonByID(ctx, ri.ID); err == nil {
-			idx[ri.ID] = p
-		}
+	if view == "list" {
+		data["Ancestors"] = ancestorsOf(ctx, q, person, 100)
+		data["Descendants"] = descendantsOf(ctx, q, person, 100)
+	} else {
+		data["Ancestors"], data["Descendants"] = nil, nil
 	}
-	data["RootIndex"] = idx
+
+	data["People"] = s.pickerPeople(ctx)
 	s.render(w, "tree.html", http.StatusOK, data)
 }
 
@@ -168,20 +160,24 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 	data["Person"] = person
 	data["Gens"] = depth
 	data["GensChoices"] = []int{2, 3, 4, 5, 6}
+	data["TreeBase"] = "/person/" + strconv.FormatInt(id, 10) + "/tree"
 	data["PhotoID"], _ = q.ProfilePhotoID(ctx, person.ID)
 	data["Orient"] = orientParam(r, "v") // classic pedigree: vertical by default
 
 	// Adaptive view default from how many people the tree reaches.
 	nodeCount := int64(len(s.chartDataOf(ctx, person, depth)))
+	view := resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, false))
 	data["NodeCount"] = nodeCount
-	data["View"] = resolveView(r.URL.Query().Get("view"), defaultView(nodeCount, false))
+	data["View"] = view
+	data["Compact"] = view == "tree" && nodeCount > 20
 
-	if data["View"] == "list" {
+	if view == "list" {
 		data["Ancestors"] = ancestorsOf(ctx, q, person, depth)
 		data["Descendants"] = descendantsOf(ctx, q, person, depth)
 	} else {
 		data["Ancestors"], data["Descendants"] = nil, nil
 	}
+	data["People"] = s.pickerPeople(ctx)
 	s.render(w, "tree.html", http.StatusOK, data)
 }
 

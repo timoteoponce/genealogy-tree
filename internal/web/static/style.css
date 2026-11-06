@@ -122,6 +122,45 @@ button:hover, .btn:hover { background: var(--accent-dark); text-decoration: none
 @media (max-width: 700px) { #chart { height: 480px; } }
 .gens-link { margin-right: .3rem; }
 
+/* tree header + toolbar */
+.treehead { margin-bottom: .6rem; }
+.treehead-title { display: flex; gap: .9rem; align-items: center; }
+.treehead-title h1 { margin: 0 0 .1rem; }
+.treehead-title p { margin: 0; }
+.toolbar {
+  display: flex; gap: .7rem; align-items: center; flex-wrap: wrap;
+  margin-top: .8rem; padding: .55rem .7rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+}
+.picker { display: flex; gap: .4rem; align-items: center; flex: 1 1 16rem; }
+.picker-input {
+  flex: 1; min-width: 12rem; padding: .45rem .55rem; font: inherit;
+  border: 1px solid var(--line); border-radius: 8px;
+}
+.picker-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* segmented control (view switcher / generation picker) */
+.viewswitch, .gens { display: inline-flex; gap: .15rem; }
+.seg {
+  padding: .32rem .7rem; border-radius: 8px; font-size: .9rem;
+  color: var(--ink); background: transparent; border: none; text-decoration: none;
+  cursor: pointer;
+}
+a.seg:hover { background: #ece7db; text-decoration: none; }
+.seg.active { background: var(--accent); color: #fff; font-weight: 600; }
+.hint { display: block; margin: .5rem 0 0; }
+
+/* button variants */
+.btn.ghost {
+  background: transparent; color: var(--accent-dark);
+  border: 1px solid var(--line);
+}
+.btn.ghost:hover { background: #ece7db; }
+.btn.secondary { background: #ece7db; color: var(--ink); }
+.btn.secondary:hover { background: #ddd8ca; }
+.btn.small { padding: .32rem .65rem; font-size: .85rem; }
+
+
 /* plain text tree fallback (view=list) */
 .treelist { list-style: none; padding: 0; }
 .treelist li { padding: .2rem 0; border-bottom: 1px dotted var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

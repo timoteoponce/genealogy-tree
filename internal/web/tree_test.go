@@ -7,17 +7,20 @@ import (
 	"testing"
 )
 
-// TestFullTreePage covers GET /tree: root picker renders, the default root
-// is reachable, and /tree.json?gens=0 includes everyone reachable.
+// TestFullTreePage covers GET /tree: the focus search renders, the default
+// focus is the largest root, and /tree.json?gens=0 includes everyone.
 func TestFullTreePage(t *testing.T) {
 	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
 
 	status, body := get(t, e.admin, e.ts.URL+"/tree")
-	if status != http.StatusOK || !strings.Contains(body, "root") {
+	if status != http.StatusOK || !strings.Contains(body, "Family tree") {
 		t.Fatalf("full tree page: %d", status)
 	}
-	if !strings.Contains(body, "John Smith") || !strings.Contains(body, "people") {
-		t.Fatalf("root picker missing: %s", body)
+	if !strings.Contains(body, "Search for a person") {
+		t.Fatalf("focus search missing: %s", body)
+	}
+	if !strings.Contains(body, "John Smith") {
+		t.Fatalf("people datalist missing: %s", body)
 	}
 
 	// gens=0 (full) returns every reachable person for the focus root.
@@ -31,10 +34,11 @@ func TestFullTreePage(t *testing.T) {
 		}
 	}
 
-	// Root picker can switch roots via ?person=.
-	status, body = get(t, e.admin, e.ts.URL+"/tree?person=2")
-	if status != http.StatusOK || !strings.Contains(body, `value="2"`) {
-		t.Fatalf("root switch: %d %s", status, body)
+	// ?person= can focus on a NON-root person (Samuel has parents, so he is
+	// not a root) — regression for the dropdown-jump bug.
+	status, body = get(t, e.admin, e.ts.URL+"/tree?person=3")
+	if status != http.StatusOK || !strings.Contains(body, `id="focusName">Samuel Smith`) {
+		t.Fatalf("non-root focus ignored: %d %s", status, body)
 	}
 
 	// Nav + hero link present on the dashboard.
