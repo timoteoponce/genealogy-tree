@@ -1,21 +1,43 @@
 {{template "header" .}}
 <section class="loginbox formbox">
-  <h1>Add parents of {{.Child.DisplayName}}</h1>
-  <p class="muted">Leaving a parent empty skips them.</p>
+  {{if .AttachFamilyID}}
+    <h1>{{if eq .AttachRole "father"}}Add father{{else}}Add mother{{end}} of {{.Child.DisplayName}}</h1>
+    {{with .ExistingParent}}
+    <p class="muted">Their other parent is <a href="/person/{{.ID}}">{{.DisplayName}}</a> — the new parent will be added to that same family.</p>
+    {{end}}
+  {{else}}
+    <h1>Add parents of {{.Child.DisplayName}}</h1>
+    <p class="muted">Leave a parent empty to skip them.</p>
+  {{end}}
   {{with .Error}}<p class="error">{{.}}</p>{{end}}
+
   <form method="post" action="/family/add">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
     <input type="hidden" name="child" value="{{.ChildID}}">
+    {{if .AttachFamilyID}}
+      <input type="hidden" name="family_id" value="{{.AttachFamilyID}}">
+      <input type="hidden" name="slot" value="{{.AttachSlot}}">
+      <input type="hidden" name="role" value="{{.AttachRole}}">
+    {{end}}
 
+    {{if not .AttachFamilyID}}
     <h2>Father</h2>
-    <label>First names <input name="father_given"></label>
-    <label>Surname <input name="father_surname" value="{{with .Child}}{{.Surname}}{{end}}"></label>
-    <label>Birth (year or date) <input name="father_birth" placeholder="e.g. 1920"></label>
+    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname}}
+    {{end}}
 
+    {{if .AttachFamilyID}}{{if eq .AttachRole "father"}}
+    <h2>Father</h2>
+    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname}}
+    {{end}}{{end}}
+
+    {{if .AttachFamilyID}}{{if eq .AttachRole "mother"}}
     <h2>Mother</h2>
-    <label>First names <input name="mother_given"></label>
-    <label>Surname <input name="mother_surname"></label>
-    <label>Birth (year or date) <input name="mother_birth" placeholder="e.g. 1924"></label>
+    {{template "parentFields" dict "Suffix" "mother" "Surname" ""}}
+    {{end}}{{end}}
+
+    {{if not .AttachFamilyID}}
+    <h2>Mother</h2>
+    {{template "parentFields" dict "Suffix" "mother" "Surname" ""}}
 
     <h2>Family</h2>
     <label>Marriage — date or year
@@ -31,7 +53,20 @@
         <option value="foster">Foster child</option>
       </select>
     </label>
-    <button type="submit">Create family</button>
+    {{end}}
+
+    <button type="submit">{{if .AttachFamilyID}}Add {{.AttachRole}}{{else}}Create family{{end}}</button>
   </form>
+  {{template "peopleDatalist" .}}
 </section>
 {{template "footer" .}}
+
+{{define "parentFields"}}
+<label>Link an existing person <span class="muted">(search by name)</span>
+  <input type="search" list="people-datalist" data-picker="{{.Suffix}}_person" placeholder="Type a name…" autocomplete="off">
+  <input type="hidden" name="{{.Suffix}}_person" value="">
+</label>
+<label>…or create new — first names <input name="{{.Suffix}}_given"></label>
+<label>Surname <input name="{{.Suffix}}_surname" value="{{.Surname}}"></label>
+<label>Birth (year or date) <input name="{{.Suffix}}_birth" placeholder="e.g. 1920"></label>
+{{end}}

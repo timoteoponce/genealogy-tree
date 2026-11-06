@@ -1,0 +1,55 @@
+{{template "header" .}}
+<section class="loginbox formbox">
+  <h1>{{.Title}}</h1>
+  <p class="muted">{{with .Person}}For <a href="/person/{{.ID}}">{{.DisplayName}}</a>{{end}}</p>
+  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+
+  <form method="post" action="{{.Action}}">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="person" value="{{.Person.ID}}">
+
+    {{if .Families}}
+      {{if gt (len .Families) 1}}
+      <label>Into which family?
+        <select name="family_id">
+          {{range .Families}}<option value="{{.ID}}">{{.Label}}</option>{{end}}
+        </select>
+      </label>
+      {{else}}
+      <input type="hidden" name="family_id" value="{{(index .Families 0).ID}}">
+      {{end}}
+    {{else}}
+      <input type="hidden" name="family_id" value="0">
+      <p class="muted">A new family will be created automatically.</p>
+    {{end}}
+
+    <label>Link an existing person <span class="muted">(search by name)</span>
+      <input type="search" list="people-datalist" data-picker="person_id"
+             placeholder="Type a name…" autocomplete="off">
+      <input type="hidden" name="person_id" value="">
+    </label>
+
+    <h2>…or create a new person</h2>
+    <label>First names <input name="child_given"></label>
+    <label>Surname <input name="child_surname" value="{{with .Person}}{{.Surname}}{{end}}"></label>
+    <label>Sex
+      <select name="child_sex">
+        <option value="">Unknown</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+        <option value="O">Other</option>
+      </select>
+    </label>
+    <label>Birth (year or date) <input name="child_birth" placeholder="e.g. 1994"></label>
+    <label>Link type
+      <select name="relationship">
+        <option value="birth">Biological</option>
+        <option value="adopted">Adopted</option>
+        <option value="foster">Foster</option>
+      </select>
+    </label>
+    <button type="submit">Add</button>
+  </form>
+  {{template "peopleDatalist" .}}
+</section>
+{{template "footer" .}}

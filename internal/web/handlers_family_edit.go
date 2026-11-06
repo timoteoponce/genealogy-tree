@@ -43,6 +43,7 @@ func (s *Server) familyEditPage(w http.ResponseWriter, r *http.Request) {
 	data["Partner2Filled"] = partners[1].ID != 0
 	data["Children"] = kids
 	data["StatusOptions"] = statusOptions(family.Status)
+	data["People"] = s.pickerPeople(ctx)
 	s.render(w, "family_form.html", http.StatusOK, data)
 }
 

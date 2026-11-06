@@ -35,6 +35,22 @@ func NewServer(cfg config.Config, st *store.Store) (*Server, error) {
 	funcs := template.FuncMap{
 		// list returns its string arguments as a slice (template helper).
 		"list": func(args ...string) []string { return args },
+		// dict builds a map from alternating key/value args (for passing
+		// named args into sub-templates).
+		"dict": func(values ...any) (map[string]any, error) {
+			if len(values)%2 != 0 {
+				return nil, fmt.Errorf("dict: odd number of args")
+			}
+			m := map[string]any{}
+			for i := 0; i < len(values); i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("dict: key not a string")
+				}
+				m[key] = values[i+1]
+			}
+			return m, nil
+		},
 	}
 	tmpl, err := template.New("web").Funcs(funcs).ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
@@ -100,6 +116,10 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("POST /family/add", s.wrap("editor", s.familyAddParents))
 	mux.HandleFunc("GET /family/new", s.wrap("editor", s.familyNew))
 	mux.HandleFunc("POST /family/new", s.wrap("editor", s.familyNew))
+	mux.HandleFunc("GET /person/{id}/child/new", s.wrap("editor", s.addChildPage))
+	mux.HandleFunc("POST /person/{id}/child/new", s.wrap("editor", s.addChildCreate))
+	mux.HandleFunc("GET /person/{id}/sibling/new", s.wrap("editor", s.addSiblingPage))
+	mux.HandleFunc("POST /person/{id}/sibling/new", s.wrap("editor", s.addSiblingCreate))
 	mux.HandleFunc("GET /family/{id}/edit", s.wrap("editor", s.familyEditPage))
 	mux.HandleFunc("POST /family/{id}/edit", s.wrap("editor", s.familyUpdate))
 	mux.HandleFunc("POST /family/{id}/delete", s.wrap("admin", s.familyDelete))

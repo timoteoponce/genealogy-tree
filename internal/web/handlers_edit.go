@@ -210,7 +210,10 @@ func (s *Server) personDelete(w http.ResponseWriter, r *http.Request) {
 
 // -- "add parents" (create family + parents) ---------------------------------
 
-// familyAddParents handles GET /family/add?child=<PID> and POST same.
+// familyAddParents handles GET/POST /family/add?child=<PID> to add a parent.
+// When the child already has a parent-family with a free slot, the form
+// attaches the new parent into that family; otherwise it creates a new
+// family with father/mother and links the child.
 func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := qOf(s, r)
@@ -223,6 +226,13 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 		data := s.baseData(r, "Add parents of "+child.DisplayName())
 		data["Child"] = child
 		data["ChildID"] = child.ID
+		data["People"] = s.pickerPeople(ctx)
+		if famID, slot, role, existing, ok := s.parentFamilyToFill(ctx, q, child); ok {
+			data["AttachFamilyID"] = famID
+			data["AttachSlot"] = slot
+			data["AttachRole"] = role
+			data["ExistingParent"] = existing
+		}
 		s.render(w, "add_parents.html", http.StatusOK, data)
 		return
 	}
@@ -234,6 +244,41 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Attach mode: fill the free slot of an existing parent family.
+	if famID := formID(r, "family_id"); famID > 0 {
+		role := formVal(r, "role")
+		if role != "father" && role != "mother" {
+			role = "father"
+		}
+		parentID, err := resolveParent(ctx, q, r, role)
+		if err != nil {
+			s.renderError(w, r, http.StatusUnprocessableEntity, "Could not save parent: "+err.Error())
+			return
+		}
+		if parentID == 0 {
+			s.renderAddParentsError(w, r, child, "Enter or pick a parent.")
+			return
+		}
+		fam, err := q.FamilyByID(ctx, famID)
+		if err != nil {
+			s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+			return
+		}
+		if role == "father" {
+			fam.Partner1ID = &parentID
+		} else {
+			fam.Partner2ID = &parentID
+		}
+		if err := q.UpdateFamily(ctx, &fam); err != nil {
+			s.renderError(w, r, http.StatusUnprocessableEntity, "Could not save family: "+err.Error())
+			return
+		}
+		_ = q.InsertAudit(ctx, s.St.DB, userIDof(r), "set-parent", "family", &famID, child.DisplayName())
+		http.Redirect(w, r, "/family/"+strconv.FormatInt(famID, 10), http.StatusFound)
+		return
+	}
+
+	// Create mode: a new family with father/mother, then link the child.
 	tx, err := s.St.Begin(ctx)
 	if err != nil {
 		s.renderError(w, r, http.StatusInternalServerError, "Database unavailable.")
@@ -242,35 +287,29 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 	tq := store.NewQueries(tx)
 
-	fam := models.Family{Status: models.FamilyMarried}
-	father, ok1 := parentFromForm(r, "father")
-	mother, ok2 := parentFromForm(r, "mother")
-	if !ok1 && !ok2 {
-		tx.Rollback()
-		data := s.baseData(r, "Add parents")
-		data["Child"] = child
-		data["ChildID"] = child.ID
-		data["Error"] = "Enter at least one parent."
-		s.render(w, "add_parents.html", http.StatusUnprocessableEntity, data)
+	// A parent can be an existing person (picked by name) or a new one.
+	fatherID, err := resolveParent(ctx, tq, r, "father")
+	if err != nil {
+		s.renderError(w, r, http.StatusUnprocessableEntity, "Father: "+err.Error())
 		return
 	}
-	if ok1 {
-		id, err := tq.InsertPerson(ctx, &father)
-		if err != nil {
-			tx.Rollback()
-			s.renderError(w, r, http.StatusUnprocessableEntity, "Father could not be saved: "+err.Error())
-			return
-		}
-		fam.Partner1ID = &id
+	motherID, err := resolveParent(ctx, tq, r, "mother")
+	if err != nil {
+		s.renderError(w, r, http.StatusUnprocessableEntity, "Mother: "+err.Error())
+		return
 	}
-	if ok2 {
-		id, err := tq.InsertPerson(ctx, &mother)
-		if err != nil {
-			tx.Rollback()
-			s.renderError(w, r, http.StatusUnprocessableEntity, "Mother could not be saved: "+err.Error())
-			return
-		}
-		fam.Partner2ID = &id
+	if fatherID == 0 && motherID == 0 {
+		tx.Rollback()
+		s.renderAddParentsError(w, r, child, "Enter or pick at least one parent.")
+		return
+	}
+
+	fam := models.Family{Status: models.FamilyMarried}
+	if fatherID > 0 {
+		fam.Partner1ID = &fatherID
+	}
+	if motherID > 0 {
+		fam.Partner2ID = &motherID
 	}
 	fam.MarriageDate = formVal(r, "marriage_date")
 	fam.MarriagePlace = formVal(r, "marriage_place")
@@ -301,6 +340,69 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/family/"+strconv.FormatInt(famID, 10), http.StatusFound)
+}
+
+// resolveParent returns the id of a parent, either an existing person picked
+// by name (<suffix>_person) or a newly-inserted one built from <suffix>_*
+// fields. Returns 0 when neither was given.
+func resolveParent(ctx context.Context, tq *store.Queries, r *http.Request, suffix string) (int64, error) {
+	if id := formID(r, suffix+"_person"); id > 0 {
+		if _, err := tq.PersonByID(ctx, id); err != nil {
+			return 0, err
+		}
+		return id, nil
+	}
+	p, ok := parentFromForm(r, suffix)
+	if !ok {
+		return 0, nil
+	}
+	return tq.InsertPerson(ctx, &p)
+}
+
+// parentFamilyToFill returns the first parent family of a child that still
+// has a free partner slot, so "add parent" can attach into it instead of
+// creating a duplicate family.
+func (s *Server) parentFamilyToFill(ctx context.Context, q *store.Queries, child models.Person) (int64, int, string, models.Person, bool) {
+	fams, _ := q.FamiliesOfChild(ctx, child.ID)
+	for _, f := range fams {
+		var slot int
+		var role string
+		var other *int64
+		switch {
+		case f.Partner1ID == nil:
+			slot, role, other = 1, "father", f.Partner2ID
+		case f.Partner2ID == nil:
+			slot, role, other = 2, "mother", f.Partner1ID
+		}
+		if slot == 0 {
+			continue
+		}
+		var existing models.Person
+		if other != nil {
+			existing, _ = q.PersonByID(ctx, *other)
+		}
+		return f.ID, slot, role, existing, true
+	}
+	return 0, 0, "", models.Person{}, false
+}
+
+// renderAddParentsError re-renders the add-parents form with an error and
+// the same attach/create context the GET produced.
+func (s *Server) renderAddParentsError(w http.ResponseWriter, r *http.Request, child models.Person, msg string) {
+	ctx := r.Context()
+	q := qOf(s, r)
+	data := s.baseData(r, "Add parents")
+	data["Child"] = child
+	data["ChildID"] = child.ID
+	data["People"] = s.pickerPeople(ctx)
+	data["Error"] = msg
+	if famID, slot, role, existing, ok := s.parentFamilyToFill(ctx, q, child); ok {
+		data["AttachFamilyID"] = famID
+		data["AttachSlot"] = slot
+		data["AttachRole"] = role
+		data["ExistingParent"] = existing
+	}
+	s.render(w, "add_parents.html", http.StatusUnprocessableEntity, data)
 }
 
 // parentFromForm builds a parent person (suffix = "father"|"mother").
@@ -353,6 +455,7 @@ func (s *Server) familyNew(w http.ResponseWriter, r *http.Request) {
 		}
 		data := s.baseData(r, "Add spouse of "+partner.DisplayName())
 		data["Partner"] = partner
+		data["People"] = s.pickerPeople(ctx)
 		s.render(w, "add_spouse.html", http.StatusOK, data)
 		return
 	}
@@ -381,6 +484,7 @@ func (s *Server) familyNew(w http.ResponseWriter, r *http.Request) {
 		if !ok {
 			data := s.baseData(r, "Add spouse")
 			data["Partner"] = partner
+			data["People"] = s.pickerPeople(ctx)
 			data["Error"] = "Pick an existing person or fill in the new spouse fields."
 			s.render(w, "add_spouse.html", http.StatusUnprocessableEntity, data)
 			return

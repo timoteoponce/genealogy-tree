@@ -6,8 +6,9 @@
     <input type="hidden" name="csrf" value="{{.CSRF}}">
     <input type="hidden" name="partner" value="{{.Partner.ID}}">
 
-    <label>Existing person ID <span class="muted">(search in People list, optional)</span>
-      <input name="spouse_person" inputmode="numeric" placeholder="person #">
+    <label>Link an existing person <span class="muted">(search by name, optional)</span>
+      <input type="search" list="people-datalist" data-picker="spouse_person" placeholder="Type a name…" autocomplete="off">
+      <input type="hidden" name="spouse_person" value="">
     </label>
 
     <h2>…or create a new spouse</h2>
@@ -27,5 +28,6 @@
     <label>Place <input name="marriage_place"></label>
     <button type="submit">Create family</button>
   </form>
+  {{template "peopleDatalist" .}}
 </section>
 {{template "footer" .}}

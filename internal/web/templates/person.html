@@ -8,9 +8,11 @@
       {{if .CanEdit}}
       <div class="actionrow">
         <a class="btn" href="/person/{{.Person.ID}}/edit">Edit</a>
-        <a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a>
-        {{if not .Parents}}<a class="btn" href="/family/add?child={{.Person.ID}}">Add parents</a>{{end}}
-        <a class="btn" href="/family/new?partner={{.Person.ID}}">Add spouse</a>
+        <a class="btn ghost" href="/person/{{.Person.ID}}/tree">View tree</a>
+        <a class="btn secondary" href="/person/{{.Person.ID}}/child/new">Add child</a>
+        <a class="btn secondary" href="/family/new?partner={{.Person.ID}}">Add spouse</a>
+        <a class="btn secondary" href="/family/add?child={{.Person.ID}}">Add parent</a>
+        {{if .Parents}}<a class="btn secondary" href="/person/{{.Person.ID}}/sibling/new">Add sibling</a>{{end}}
       </div>
       {{else}}
       <div class="actionrow"><a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a></div>

@@ -13,6 +13,7 @@
   <div class="navlinks">
     <a href="/people">People</a>
     <a href="/tree">Tree</a>
+    {{if .CanEdit}}<a href="/person/new">+ Add person</a>{{end}}
   </div>
   <div class="navlinks">
     {{if .CanAdmin}}

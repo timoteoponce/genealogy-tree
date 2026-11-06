@@ -16,7 +16,8 @@
       <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="1">
-        <label>Attach person # <input name="person_id" class="short"></label>
+        <label>Attach a person <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off"></label>
+        <input type="hidden" name="person_id" value="">
         <button class="small" type="submit">Attach</button>
       </form>
       {{end}}
@@ -35,7 +36,8 @@
       <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="2">
-        <label>Attach person # <input name="person_id" class="short"></label>
+        <label>Attach a person <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off"></label>
+        <input type="hidden" name="person_id" value="">
         <button class="small" type="submit">Attach</button>
       </form>
       {{end}}
@@ -87,8 +89,9 @@
 
   <form method="post" action="/family/{{.Family.ID}}/children/add" class="formbox childform">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
-    <label>Link existing child — person #
-      <input name="person_id" class="short">
+    <label>Link an existing child <span class="muted">(search by name)</span>
+      <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off">
+      <input type="hidden" name="person_id" value="">
     </label>
     <h3>…or create a new child</h3>
     <label>First names <input name="child_given"></label>
@@ -103,6 +106,7 @@
     </label>
     <button type="submit">Add child</button>
   </form>
+  {{template "peopleDatalist" .}}
 
   {{if .CanAdmin}}
   <form method="post" action="/family/{{.Family.ID}}/delete" class="dangerform">
