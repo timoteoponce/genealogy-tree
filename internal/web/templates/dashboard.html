@@ -1,25 +1,25 @@
 {{template "header" .}}
 <section class="hero">
   <div>
-    <h1>Welcome to {{.SiteName}}</h1>
-    <p class="muted">Browse and grow your family history — everyone is here.</p>
+    <h1>{{t $.Lang "Welcome to %s" .SiteName}}</h1>
+    <p class="muted">{{t $.Lang "Browse and grow your family history — everyone is here."}}</p>
   </div>
   <div class="heroactions">
-    <a class="btn" href="/tree">{{template "iconTree" .}} Family tree</a>
-    <a class="btn" href="/people">People</a>
-    {{if .CanEdit}}<a class="btn" href="/person/new">+ Add person</a>{{end}}
+    <a class="btn" href="/tree">{{template "iconTree" .}} {{t $.Lang "Family tree"}}</a>
+    <a class="btn" href="/people">{{t $.Lang "People"}}</a>
+    {{if .CanEdit}}<a class="btn" href="/person/new">+ {{t $.Lang "Add person"}}</a>{{end}}
   </div>
 </section>
 
 <section class="stats">
-  <div class="statcard"><b>{{.PeopleCount}}</b><span>people</span></div>
-  <div class="statcard"><b>{{.FamiliesCount}}</b><span>families</span></div>
-  <div class="statcard"><b>{{.MediaCount}}</b><span>photos</span></div>
-  <div class="statcard"><b>{{.SourcesCount}}</b><span>sources</span></div>
+  <div class="statcard"><b>{{.PeopleCount}}</b><span>{{t $.Lang "people"}}</span></div>
+  <div class="statcard"><b>{{.FamiliesCount}}</b><span>{{t $.Lang "families"}}</span></div>
+  <div class="statcard"><b>{{.MediaCount}}</b><span>{{t $.Lang "photos"}}</span></div>
+  <div class="statcard"><b>{{.SourcesCount}}</b><span>{{t $.Lang "sources"}}</span></div>
 </section>
 
 <section>
-  <h2>Recently added</h2>
+  <h2>{{t $.Lang "Recently added"}}</h2>
   {{if .Recent}}
   <ul class="peoplelist">
     {{range .Recent}}
@@ -30,7 +30,7 @@
     {{end}}
   </ul>
   {{else}}
-  <p class="muted">No people yet — an admin can import a GEDCOM under {{if .CanAdmin}}<a href="/admin">Admin</a>{{else}}Admin{{end}}.</p>
+  <p class="muted">{{t $.Lang "No people yet — an admin can import a GEDCOM under"}} {{if .CanAdmin}}<a href="/admin">{{t $.Lang "Admin"}}</a>{{else}}{{t $.Lang "Admin"}}{{end}}.</p>
   {{end}}
 </section>
 {{template "footer" .}}

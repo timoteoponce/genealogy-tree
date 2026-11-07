@@ -4,65 +4,65 @@
     <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="128" height="128">
     <div class="pheadinfo">
       <h1>{{.Person.DisplayName}}</h1>
-      <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">living</span>{{end}}</p>
+      <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">{{t $.Lang "living"}}</span>{{end}}</p>
       {{if .CanEdit}}
       <div class="actionrow">
-        <a class="btn" href="/person/{{.Person.ID}}/edit">Edit</a>
-        <a class="btn ghost" href="/person/{{.Person.ID}}/tree">View tree</a>
-        <a class="btn secondary" href="/person/{{.Person.ID}}/child/new">Add child</a>
-        <a class="btn secondary" href="/family/new?partner={{.Person.ID}}">Add spouse</a>
-        <a class="btn secondary" href="/family/add?child={{.Person.ID}}">Add parent</a>
-        {{if .Parents}}<a class="btn secondary" href="/person/{{.Person.ID}}/sibling/new">Add sibling</a>{{end}}
+        <a class="btn" href="/person/{{.Person.ID}}/edit">{{t $.Lang "Edit"}}</a>
+        <a class="btn ghost" href="/person/{{.Person.ID}}/tree">{{t $.Lang "View tree"}}</a>
+        <a class="btn secondary" href="/person/{{.Person.ID}}/child/new">{{t $.Lang "Add child"}}</a>
+        <a class="btn secondary" href="/family/new?partner={{.Person.ID}}">{{t $.Lang "Add spouse"}}</a>
+        <a class="btn secondary" href="/family/add?child={{.Person.ID}}">{{t $.Lang "Add parent"}}</a>
+        {{if .Parents}}<a class="btn secondary" href="/person/{{.Person.ID}}/sibling/new">{{t $.Lang "Add sibling"}}</a>{{end}}
       </div>
       {{else}}
-      <div class="actionrow"><a class="btn" href="/person/{{.Person.ID}}/tree">View tree</a></div>
+      <div class="actionrow"><a class="btn" href="/person/{{.Person.ID}}/tree">{{t $.Lang "View tree"}}</a></div>
       {{end}}
     </div>
   </div>
 
   <div class="personcols">
     <div class="col">
-      <h2>Life facts</h2>
+      <h2>{{t $.Lang "Life facts"}}</h2>
       <table class="facttable">
-        {{with .Person.BirthDate}}<tr><th>Born</th><td>{{.}} {{with $.Person.BirthPlace}}· {{.}}{{end}}</td></tr>{{end}}
+        {{with .Person.BirthDate}}<tr><th>{{t $.Lang "Born"}}</th><td>{{.}} {{with $.Person.BirthPlace}}· {{.}}{{end}}</td></tr>{{end}}
         {{range .Events}}
         <tr><th>{{.Tag}}</th><td>{{with .Date}}{{.}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>
         {{end}}
-        {{with .Person.DeathDate}}<tr><th>Died</th><td>{{.}} {{with $.Person.DeathPlace}}· {{.}}{{end}}</td></tr>{{end}}
+        {{with .Person.DeathDate}}<tr><th>{{t $.Lang "Died"}}</th><td>{{.}} {{with $.Person.DeathPlace}}· {{.}}{{end}}</td></tr>{{end}}
       </table>
 
       {{with .Person.Notes}}
-      <h2>Notes</h2>
+      <h2>{{t $.Lang "Notes"}}</h2>
       <pre class="notes">{{.}}</pre>
       {{end}}
 
       {{if .Media}}
-      <h2>Photos ({{len .Media}})</h2>
+      <h2>{{t $.Lang "Photos (%d)" (len .Media)}}</h2>
       <div class="gallery">
         {{range .Media}}
         <figure class="mediaitem{{if .IsProfile}} profile{{end}}">
           <a href="/media/{{.ID}}/full"><img src="/media/{{.ID}}/thumb" alt="{{.Caption}}" width="120" height="120"></a>
-          <figcaption>{{with .Caption}}{{.}}{{end}}{{if .ImportNote}}<span class="badge">placeholder</span>{{end}}{{if .IsProfile}}<span class="badge living">portrait</span>{{end}}</figcaption>
+          <figcaption>{{with .Caption}}{{.}}{{end}}{{if .ImportNote}}<span class="badge">{{t $.Lang "placeholder"}}</span>{{end}}{{if .IsProfile}}<span class="badge living">{{t $.Lang "portrait"}}</span>{{end}}</figcaption>
           {{if $.CanEdit}}
           <div class="mediabar">
             {{if not .IsProfile}}
             <form method="post" action="/media/{{.ID}}/profile" class="inline">
               <input type="hidden" name="csrf" value="{{$.CSRF}}">
-              <button class="linklike small" type="submit">set portrait</button>
+              <button class="linklike small" type="submit">{{t $.Lang "set portrait"}}</button>
             </form>
             {{end}}
             {{if .ImportNote}}
             <form method="post" action="/person/{{$.Person.ID}}/media" enctype="multipart/form-data" class="inline">
               <input type="hidden" name="csrf" value="{{$.CSRF}}">
               <input type="hidden" name="media_id" value="{{.ID}}">
-              <label class="btn text small filebtn">Attach photo
+              <label class="btn text small filebtn">{{t $.Lang "Attach photo"}}
                 <input type="file" name="file" required onchange="this.form.submit()">
               </label>
             </form>
             {{end}}
             <form method="post" action="/media/{{.ID}}/delete" class="inline">
               <input type="hidden" name="csrf" value="{{$.CSRF}}">
-              <button class="linklike small danger" type="submit">delete</button>
+              <button class="linklike small danger" type="submit">{{t $.Lang "delete"}}</button>
             </form>
           </div>
           {{end}}
@@ -72,44 +72,44 @@
       {{end}}
 
       {{if and .CanEdit (not .Media)}}
-      <h2>Upload photo</h2>
+      <h2>{{t $.Lang "Upload photo"}}</h2>
       <form method="post" action="/person/{{.Person.ID}}/media" enctype="multipart/form-data" class="uploadform">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="file" name="file" required>
-        <input name="caption" placeholder="caption (optional)" class="short">
-        <button type="submit">Upload</button>
+        <input name="caption" placeholder="{{t $.Lang "caption (optional)"}}" class="short">
+        <button type="submit">{{t $.Lang "Upload"}}</button>
       </form>
       {{end}}
 
       {{with .Citations}}
-      <h2>Sources</h2>
+      <h2>{{t $.Lang "Sources"}}</h2>
       <ul class="sourcelist">
-        {{range .}}<li>{{if .SourceTitle}}<b>{{.SourceTitle}}</b>{{else}}(untitled source){{end}}{{with .Citation.Detail}} — {{.}}{{end}}</li>{{end}}
+        {{range .}}<li>{{if .SourceTitle}}<b>{{.SourceTitle}}</b>{{else}}{{t $.Lang "(untitled source)"}}{{end}}{{with .Citation.Detail}} — {{.}}{{end}}</li>{{end}}
       </ul>
       {{end}}
     </div>
 
     <div class="col">
       {{with .Parents}}
-      <h2>Parents</h2>
+      <h2>{{t $.Lang "Parents"}}</h2>
       <ul class="relativelist">
         {{range .}}<li>{{template "personlink" .}}</li>{{end}}
-        {{if $.CanEdit}}{{if not .}}<li><a class="small" href="/family/add?child={{$.Person.ID}}">+ add parents</a></li>{{end}}{{end}}
+        {{if $.CanEdit}}{{if not .}}<li><a class="small" href="/family/add?child={{$.Person.ID}}">{{t $.Lang "+ add parents"}}</a></li>{{end}}{{end}}
       </ul>
       {{end}}
 
       {{with .Siblings}}
-      <h2>Siblings</h2>
+      <h2>{{t $.Lang "Siblings"}}</h2>
       <ul class="relativelist">
         {{range .}}<li>{{template "personlink" .}}</li>{{end}}
       </ul>
       {{end}}
 
       {{range .Marriages}}
-      <h2>Spouse &amp; children</h2>
+      <h2>{{t $.Lang "Spouse & children"}}</h2>
       <p class="muted">
-        {{if .Spouse}}Spouse: {{template "personlink-short" .Spouse}}{{else}}Spouse: <span class="muted">unknown</span>{{end}}
-        {{if .Family.MarriageDate}} · married {{.Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
+        {{if .Spouse}}{{t $.Lang "Spouse:"}} {{template "personlink-short" .Spouse}}{{else}}{{t $.Lang "Spouse:"}} <span class="muted">{{t $.Lang "unknown"}}</span>{{end}}
+        {{if .Family.MarriageDate}} · {{t $.Lang "married %s" .Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
       </p>
       {{with .Children}}
       <ul class="relativelist">

@@ -1,5 +1,5 @@
 {{define "header"}}<!DOCTYPE html>
-<html lang="en">
+<html lang="{{.Lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,22 +11,28 @@
 <nav class="topnav">
   <a class="brand" href="/">{{template "iconTree" .}} {{.SiteName}}</a>
   <div class="navlinks">
-    <a href="/people">People</a>
-    <a href="/tree">Tree</a>
-    {{if .CanEdit}}<a href="/person/new">+ Add person</a>{{end}}
+    <a href="/people">{{t $.Lang "People"}}</a>
+    <a href="/tree">{{t $.Lang "Tree"}}</a>
+    {{if .CanEdit}}<a href="/person/new">+ {{t $.Lang "Add person"}}</a>{{end}}
   </div>
   <div class="navlinks">
     {{if .CanAdmin}}
-      <a href="/admin">Admin</a>
+      <a href="/admin">{{t $.Lang "Admin"}}</a>
     {{end}}
+    <form method="post" action="/lang" class="inline langswitch">
+      <input type="hidden" name="next" value="{{.Path}}">
+      <button class="linklike small{{if eq .Lang "en"}} active{{end}}" type="submit" name="lang" value="en">EN</button>
+      <span class="muted">/</span>
+      <button class="linklike small{{if eq .Lang "es"}} active{{end}}" type="submit" name="lang" value="es">ES</button>
+    </form>
     {{if .Session.User.ID}}
       <span class="userchip">{{.Session.User.Username}} <em>{{.Session.User.Role}}</em></span>
       <form method="post" action="/logout" class="inline">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
-        <button type="submit" class="linklike">Log out</button>
+        <button type="submit" class="linklike">{{t $.Lang "Log out"}}</button>
       </form>
     {{else}}
-      <a href="/login">Log in</a>
+      <a href="/login">{{t $.Lang "Log in"}}</a>
     {{end}}
   </div>
 </nav>
@@ -36,7 +42,7 @@
 {{define "footer"}}
 </main>
 <footer class="sitefooter">
-  <span>genealogy-tree · single-binary family archive</span>
+  <span>{{t $.Lang "genealogy-tree · single-binary family archive"}}</span>
 </footer>
 <script type="module" src="/static/picker.js"></script>
 </body>

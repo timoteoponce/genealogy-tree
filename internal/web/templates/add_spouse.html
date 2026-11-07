@@ -1,32 +1,32 @@
 {{template "header" .}}
 <section class="loginbox formbox">
-  <h1>Add spouse of {{.Partner.DisplayName}}</h1>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <h1>{{t $.Lang "Add spouse of"}} {{.Partner.DisplayName}}</h1>
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
   <form method="post" action="/family/new">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
     <input type="hidden" name="partner" value="{{.Partner.ID}}">
 
-    <label>Link an existing person <span class="muted">(search by name, optional)</span>
-      <input type="search" list="people-datalist" data-picker="spouse_person" placeholder="Type a name…" autocomplete="off">
+    <label>{{t $.Lang "Link an existing person"}} <span class="muted">({{t $.Lang "search by name, optional"}})</span>
+      <input type="search" list="people-datalist" data-picker="spouse_person" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
       <input type="hidden" name="spouse_person" value="">
     </label>
 
-    <h2>…or create a new spouse</h2>
-    <label>First names <input name="spouse_given"></label>
-    <label>Surname <input name="spouse_surname" value="{{with .Partner}}{{.Surname}}{{end}}"></label>
-    <label>Sex
+    <h2>{{t $.Lang "…or create a new spouse"}}</h2>
+    <label>{{t $.Lang "First names"}} <input name="spouse_given"></label>
+    <label>{{t $.Lang "Surname"}} <input name="spouse_surname" value="{{with .Partner}}{{.Surname}}{{end}}"></label>
+    <label>{{t $.Lang "Sex"}}
       <select name="spouse_sex">
-        <option value="">Auto (opposite of {{.Partner.DisplayName}})</option>
-        <option value="M">Male</option>
-        <option value="F">Female</option>
+        <option value="">{{t $.Lang "Auto (opposite of %s)" .Partner.DisplayName}}</option>
+        <option value="M">{{t $.Lang "Male"}}</option>
+        <option value="F">{{t $.Lang "Female"}}</option>
       </select>
     </label>
-    <label>Birth (year or date) <input name="spouse_birth"></label>
+    <label>{{t $.Lang "Birth (year or date)"}} <input name="spouse_birth"></label>
 
-    <h2>Marriage</h2>
-    <label>Date or year <input name="marriage_date" placeholder='e.g. "2011-05-14", "ABT 1949"'></label>
-    <label>Place <input name="marriage_place"></label>
-    <button type="submit">Create family</button>
+    <h2>{{t $.Lang "Marriage"}}</h2>
+    <label>{{t $.Lang "Date or year"}} <input name="marriage_date" placeholder='{{t $.Lang "e.g. \"2011-05-14\", \"ABT 1949\""}}'></label>
+    <label>{{t $.Lang "Place"}} <input name="marriage_place"></label>
+    <button type="submit">{{t $.Lang "Create family"}}</button>
   </form>
   {{template "peopleDatalist" .}}
 </section>

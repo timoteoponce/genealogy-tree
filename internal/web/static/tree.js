@@ -84,9 +84,11 @@ if (cont && window.f3) {
       if (!container || container.querySelector('.zoom-ctrls')) return;
       const el = document.createElement('div');
       el.className = 'zoom-ctrls';
-      el.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in">+</button>'
-        + '<button type="button" data-z="out" aria-label="Zoom out">−</button>'
-        + '<button type="button" data-z="fit" aria-label="Fit whole tree">fit</button>';
+      const lang = (document.documentElement.lang || 'en').toLowerCase();
+      const L = lang.startsWith('es') ? {in:'Acercar',out:'Alejar',fit:'Ajustar',fitLabel:'Ajustar árbol'} : {in:'Zoom in',out:'Zoom out',fit:'fit',fitLabel:'Fit whole tree'};
+      el.innerHTML = '<button type="button" data-z="in" aria-label="'+L.in+'">+</button>'
+        + '<button type="button" data-z="out" aria-label="'+L.out+'">−</button>'
+        + '<button type="button" data-z="fit" aria-label="'+L.fitLabel+'">'+L.fit+'</button>';
       container.appendChild(el);
       const svg = document.querySelector('#chart svg.main_svg');
       const holder = svg && (svg.__zoomObj ? svg : (svg.parentNode && svg.parentNode.__zoomObj ? svg.parentNode : null));

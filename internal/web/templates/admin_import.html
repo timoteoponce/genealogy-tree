@@ -1,53 +1,50 @@
 {{template "header" .}}
 <section>
-  <h1>Import GEDCOM</h1>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
-  {{with .Notice}}<p class="notice">{{.}}</p>{{end}}
+  <h1>{{t $.Lang "Import GEDCOM"}}</h1>
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
+  {{with .Notice}}<p class="notice">{{t $.Lang .}}</p>{{end}}
 
   {{if .Report}}
   <div class="formbox">
-    <h2>Import report</h2>
+    <h2>{{t $.Lang "Import report"}}</h2>
     <table class="facttable">
-      <tr><th>People</th><td>{{.Report.People}}</td></tr>
-      <tr><th>Families</th><td>{{.Report.Families}}</td></tr>
-      <tr><th>Sources</th><td>{{.Report.Sources}}</td></tr>
-      <tr><th>Events</th><td>{{.Report.Events}}</td></tr>
-      <tr><th>Media refs</th><td>{{.Report.Media}}</td></tr>
+      <tr><th>{{t $.Lang "People"}}</th><td>{{.Report.People}}</td></tr>
+      <tr><th>{{t $.Lang "Families"}}</th><td>{{.Report.Families}}</td></tr>
+      <tr><th>{{t $.Lang "Sources"}}</th><td>{{.Report.Sources}}</td></tr>
+      <tr><th>{{t $.Lang "Events"}}</th><td>{{.Report.Events}}</td></tr>
+      <tr><th>{{t $.Lang "Media refs"}}</th><td>{{.Report.Media}}</td></tr>
     </table>
     {{with .Report.Warnings}}
-    <h3>Warnings ({{len .}})</h3>
+    <h3>{{t $.Lang "Warnings (%d)" (len .)}}</h3>
     <ul class="sourcelist">
       {{range .}}<li>{{.}}</li>{{end}}
     </ul>
     {{else}}
-    <p class="muted">No warnings.</p>
+    <p class="muted">{{t $.Lang "No warnings."}}</p>
     {{end}}
   </div>
   {{end}}
 
   <div class="formbox">
-    <h2>Import a new tree</h2>
-    <p class="muted">Uploading a GEDCOM <b>replaces the whole current tree</b>.
-    Users, settings and import history are kept. Photos referenced by the file
-    become placeholders — the actual images ship in a separate zip from
-    MyHeritage and can be attached on the person pages.</p>
+    <h2>{{t $.Lang "Import a new tree"}}</h2>
+    <p class="muted">{{t $.Lang "Uploading a GEDCOM replaces the whole current tree. Users, settings and import history are kept. Photos referenced by the file become placeholders — the actual images ship in a separate zip from MyHeritage and can be attached on the person pages."}}</p>
     <form method="post" action="/admin/import" enctype="multipart/form-data">
       <input type="hidden" name="csrf" value="{{.CSRF}}">
-      <label>GEDCOM file (.ged)
+      <label>{{t $.Lang "GEDCOM file (.ged)"}}
         <input type="file" name="file" accept=".ged,text/*" required>
       </label>
-      <button type="submit">Import (replaces tree)</button>
+      <button type="submit">{{t $.Lang "Import (replaces tree)"}}</button>
     </form>
   </div>
 
-  <h2>History</h2>
+  <h2>{{t $.Lang "History"}}</h2>
   <table class="peopletable">
-    <tr><th>ID</th><th>File</th><th>Status</th><th>People</th><th>Families</th><th>Started</th></tr>
+    <tr><th>{{t $.Lang "ID"}}</th><th>{{t $.Lang "File"}}</th><th>{{t $.Lang "Status"}}</th><th>{{t $.Lang "People"}}</th><th>{{t $.Lang "Families"}}</th><th>{{t $.Lang "Started"}}</th></tr>
     {{range .History}}
     <tr>
       <td class="muted">{{.ID}}</td>
       <td>{{.Filename}}</td>
-      <td>{{if eq .Status "done"}}<span class="badge living">done</span>{{else}}<span class="badge">{{.Status}}</span>{{end}}</td>
+      <td>{{if eq .Status "done"}}<span class="badge living">{{t $.Lang "done"}}</span>{{else}}<span class="badge">{{.Status}}</span>{{end}}</td>
       <td>{{.People}}</td><td>{{.Families}}</td>
       <td class="muted">{{.StartedAt}}</td>
     </tr>

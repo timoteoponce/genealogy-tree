@@ -1,7 +1,7 @@
 {{template "header" .}}
 <section class="errorpage">
   <h1>{{.Code}}</h1>
-  <p>{{.Message}}</p>
-  <p><a href="/">&larr; Back home</a></p>
+  <p>{{t $.Lang .Message}}</p>
+  <p><a href="/">&larr; {{t $.Lang "Back home"}}</a></p>
 </section>
 {{template "footer" .}}

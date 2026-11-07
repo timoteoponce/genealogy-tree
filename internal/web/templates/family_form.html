@@ -1,44 +1,44 @@
 {{template "header" .}}
 <section>
-  <h1>Edit family</h1>
+  <h1>{{t $.Lang "Edit family"}}</h1>
 
   <div class="partnergrid">
     <div class="pbox">
-      <h2>Partner 1</h2>
+      <h2>{{t $.Lang "Partner 1"}}</h2>
       {{if .Partner1Filled}}
       <p><a href="/person/{{.Partner1.ID}}"><b>{{.Partner1.DisplayName}}</b></a> <span class="muted">{{.Partner1.Years}}</span></p>
       <form method="post" action="/family/{{.Family.ID}}/partner/detach" class="inline">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="1">
-        <button class="linklike small" type="submit">detach</button>
+        <button class="linklike small" type="submit">{{t $.Lang "detach"}}</button>
       </form>
       {{else}}
       <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="1">
-        <label>Attach a person <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off"></label>
+        <label>{{t $.Lang "Attach a person"}} <input type="search" list="people-datalist" data-picker="person_id" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off"></label>
         <input type="hidden" name="person_id" value="">
-        <button class="small" type="submit">Attach</button>
+        <button class="small" type="submit">{{t $.Lang "Attach"}}</button>
       </form>
       {{end}}
     </div>
 
     <div class="pbox">
-      <h2>Partner 2</h2>
+      <h2>{{t $.Lang "Partner 2"}}</h2>
       {{if .Partner2Filled}}
       <p><a href="/person/{{.Partner2.ID}}"><b>{{.Partner2.DisplayName}}</b></a> <span class="muted">{{.Partner2.Years}}</span></p>
       <form method="post" action="/family/{{.Family.ID}}/partner/detach" class="inline">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="2">
-        <button class="linklike small" type="submit">detach</button>
+        <button class="linklike small" type="submit">{{t $.Lang "detach"}}</button>
       </form>
       {{else}}
       <form method="post" action="/family/{{.Family.ID}}/partner/attach" class="attachform">
         <input type="hidden" name="csrf" value="{{.CSRF}}">
         <input type="hidden" name="slot" value="2">
-        <label>Attach a person <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off"></label>
+        <label>{{t $.Lang "Attach a person"}} <input type="search" list="people-datalist" data-picker="person_id" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off"></label>
         <input type="hidden" name="person_id" value="">
-        <button class="small" type="submit">Attach</button>
+        <button class="small" type="submit">{{t $.Lang "Attach"}}</button>
       </form>
       {{end}}
     </div>
@@ -49,27 +49,27 @@
     <input type="hidden" name="partner1_id" value="{{with .Partner1}}{{.ID}}{{end}}">
     <input type="hidden" name="partner2_id" value="{{with .Partner2}}{{.ID}}{{end}}">
 
-    <h2>Details</h2>
-    <label>Status
+    <h2>{{t $.Lang "Details"}}</h2>
+    <label>{{t $.Lang "Status"}}
       <select name="status">
         {{range .StatusOptions}}
-        <option value="{{index . 0}}"{{if eq $.Family.Status (index . 0)}} selected{{end}}>{{index . 1}}</option>
+        <option value="{{index . 0}}"{{if eq $.Family.Status (index . 0)}} selected{{end}}>{{t $.Lang (index . 1)}}</option>
         {{end}}
       </select>
     </label>
-    <label>Marriage — date or year
+    <label>{{t $.Lang "Marriage — date or year"}}
       <input name="marriage_date" value="{{.Family.MarriageDate}}">
     </label>
-    <label>Marriage — place
+    <label>{{t $.Lang "Marriage — place"}}
       <input name="marriage_place" value="{{.Family.MarriagePlace}}">
     </label>
-    <label>Notes
+    <label>{{t $.Lang "Notes"}}
       <textarea name="notes" rows="3">{{.Family.Notes}}</textarea>
     </label>
-    <button type="submit">Save family</button>
+    <button type="submit">{{t $.Lang "Save family"}}</button>
   </form>
 
-  <h2>Children ({{len .Children}})</h2>
+  <h2>{{t $.Lang "Children (%d)" (len .Children)}}</h2>
   {{if .Children}}
   <ul class="relativelist">
     {{range .Children}}
@@ -78,41 +78,41 @@
       <form method="post" action="/family/{{$.Family.ID}}/children/remove" class="inline">
         <input type="hidden" name="csrf" value="{{$.CSRF}}">
         <input type="hidden" name="person_id" value="{{.ID}}">
-        <button class="linklike small" type="submit">unlink</button>
+        <button class="linklike small" type="submit">{{t $.Lang "unlink"}}</button>
       </form>
     </li>
     {{end}}
   </ul>
   {{else}}
-  <p class="muted">No children linked yet.</p>
+  <p class="muted">{{t $.Lang "No children linked yet."}}</p>
   {{end}}
 
   <form method="post" action="/family/{{.Family.ID}}/children/add" class="formbox childform">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
-    <label>Link an existing child <span class="muted">(search by name)</span>
-      <input type="search" list="people-datalist" data-picker="person_id" placeholder="Type a name…" autocomplete="off">
+    <label>{{t $.Lang "Link an existing child"}} <span class="muted">({{t $.Lang "search by name"}})</span>
+      <input type="search" list="people-datalist" data-picker="person_id" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
       <input type="hidden" name="person_id" value="">
     </label>
-    <h3>…or create a new child</h3>
-    <label>First names <input name="child_given"></label>
-    <label>Surname <input name="child_surname" value="{{with .Partner1}}{{.Surname}}{{end}}"></label>
-    <label>Birth (year or date) <input name="child_birth"></label>
-    <label>Link type
+    <h3>{{t $.Lang "…or create a new child"}}</h3>
+    <label>{{t $.Lang "First names"}} <input name="child_given"></label>
+    <label>{{t $.Lang "Surname"}} <input name="child_surname" value="{{with .Partner1}}{{.Surname}}{{end}}"></label>
+    <label>{{t $.Lang "Birth (year or date)"}} <input name="child_birth"></label>
+    <label>{{t $.Lang "Link type"}}
       <select name="relationship">
-        <option value="birth">Biological child</option>
-        <option value="adopted">Adopted child</option>
-        <option value="foster">Foster child</option>
+        <option value="birth">{{t $.Lang "Biological child"}}</option>
+        <option value="adopted">{{t $.Lang "Adopted child"}}</option>
+        <option value="foster">{{t $.Lang "Foster child"}}</option>
       </select>
     </label>
-    <button type="submit">Add child</button>
+    <button type="submit">{{t $.Lang "Add child"}}</button>
   </form>
   {{template "peopleDatalist" .}}
 
   {{if .CanAdmin}}
   <form method="post" action="/family/{{.Family.ID}}/delete" class="dangerform">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
-    <label class="inline"><input type="checkbox" name="confirm" value="yes"> I am sure</label>
-    <button class="danger small" type="submit">Delete family</button>
+    <label class="inline"><input type="checkbox" name="confirm" value="yes"> {{t $.Lang "I am sure"}}</label>
+    <button class="danger small" type="submit">{{t $.Lang "Delete family"}}</button>
   </form>
   {{end}}
 </section>

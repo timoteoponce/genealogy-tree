@@ -1,15 +1,15 @@
 {{template "header" .}}
 <section class="loginbox formbox">
   {{if .AttachFamilyID}}
-    <h1>{{if eq .AttachRole "father"}}Add father{{else}}Add mother{{end}} of {{.Child.DisplayName}}</h1>
+    <h1>{{if eq .AttachRole "father"}}{{t $.Lang "Add father"}}{{else}}{{t $.Lang "Add mother"}}{{end}} {{t $.Lang "of"}} {{.Child.DisplayName}}</h1>
     {{with .ExistingParent}}
-    <p class="muted">Their other parent is <a href="/person/{{.ID}}">{{.DisplayName}}</a> — the new parent will be added to that same family.</p>
+    <p class="muted">{{t $.Lang "Their other parent is"}} <a href="/person/{{.ID}}">{{.DisplayName}}</a> — {{t $.Lang "the new parent will be added to that same family."}}</p>
     {{end}}
   {{else}}
-    <h1>Add parents of {{.Child.DisplayName}}</h1>
-    <p class="muted">Leave a parent empty to skip them.</p>
+    <h1>{{t $.Lang "Add parents of"}} {{.Child.DisplayName}}</h1>
+    <p class="muted">{{t $.Lang "Leave a parent empty to skip them."}}</p>
   {{end}}
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
 
   <form method="post" action="/family/add">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
@@ -21,52 +21,52 @@
     {{end}}
 
     {{if not .AttachFamilyID}}
-    <h2>Father</h2>
-    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname}}
+    <h2>{{t $.Lang "Father"}}</h2>
+    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname "T" .T "Lang" .Lang}}
     {{end}}
 
     {{if .AttachFamilyID}}{{if eq .AttachRole "father"}}
-    <h2>Father</h2>
-    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname}}
+    <h2>{{t $.Lang "Father"}}</h2>
+    {{template "parentFields" dict "Suffix" "father" "Surname" .Child.Surname "T" .T "Lang" .Lang}}
     {{end}}{{end}}
 
     {{if .AttachFamilyID}}{{if eq .AttachRole "mother"}}
-    <h2>Mother</h2>
-    {{template "parentFields" dict "Suffix" "mother" "Surname" ""}}
+    <h2>{{t $.Lang "Mother"}}</h2>
+    {{template "parentFields" dict "Suffix" "mother" "Surname" "" "T" .T "Lang" .Lang}}
     {{end}}{{end}}
 
     {{if not .AttachFamilyID}}
-    <h2>Mother</h2>
-    {{template "parentFields" dict "Suffix" "mother" "Surname" ""}}
+    <h2>{{t $.Lang "Mother"}}</h2>
+    {{template "parentFields" dict "Suffix" "mother" "Surname" "" "T" .T "Lang" .Lang}}
 
-    <h2>Family</h2>
-    <label>Marriage — date or year
-      <input name="marriage_date" placeholder='e.g. "1948", "ABT 1949"'>
+    <h2>{{t $.Lang "Family"}}</h2>
+    <label>{{t $.Lang "Marriage — date or year"}}
+      <input name="marriage_date" placeholder='{{t $.Lang "e.g. \"1948\", \"ABT 1949\""}}'>
     </label>
-    <label>Marriage — place
+    <label>{{t $.Lang "Marriage — place"}}
       <input name="marriage_place">
     </label>
-    <label>Child link type
+    <label>{{t $.Lang "Child link type"}}
       <select name="relationship">
-        <option value="birth">Biological child</option>
-        <option value="adopted">Adopted child</option>
-        <option value="foster">Foster child</option>
+        <option value="birth">{{t $.Lang "Biological child"}}</option>
+        <option value="adopted">{{t $.Lang "Adopted child"}}</option>
+        <option value="foster">{{t $.Lang "Foster child"}}</option>
       </select>
     </label>
     {{end}}
 
-    <button type="submit">{{if .AttachFamilyID}}Add {{.AttachRole}}{{else}}Create family{{end}}</button>
+    <button type="submit">{{if .AttachFamilyID}}{{t $.Lang "Add"}} {{.AttachRole}}{{else}}{{t $.Lang "Create family"}}{{end}}</button>
   </form>
   {{template "peopleDatalist" .}}
 </section>
 {{template "footer" .}}
 
 {{define "parentFields"}}
-<label>Link an existing person <span class="muted">(search by name)</span>
-  <input type="search" list="people-datalist" data-picker="{{.Suffix}}_person" placeholder="Type a name…" autocomplete="off">
+<label>{{t $.Lang "Link an existing person"}} <span class="muted">({{t $.Lang "search by name"}})</span>
+  <input type="search" list="people-datalist" data-picker="{{.Suffix}}_person" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
   <input type="hidden" name="{{.Suffix}}_person" value="">
 </label>
-<label>…or create new — first names <input name="{{.Suffix}}_given"></label>
-<label>Surname <input name="{{.Suffix}}_surname" value="{{.Surname}}"></label>
-<label>Birth (year or date) <input name="{{.Suffix}}_birth" placeholder="e.g. 1920"></label>
+<label>{{t $.Lang "…or create new — first names"}} <input name="{{.Suffix}}_given"></label>
+<label>{{t $.Lang "Surname"}} <input name="{{.Suffix}}_surname" value="{{.Surname}}"></label>
+<label>{{t $.Lang "Birth (year or date)"}} <input name="{{.Suffix}}_birth" placeholder="{{t $.Lang "e.g. 1920"}}"></label>
 {{end}}

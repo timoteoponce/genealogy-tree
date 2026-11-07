@@ -1,16 +1,16 @@
 {{template "header" .}}
 <section class="loginbox">
-  <h1>Log in</h1>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <h1>{{t $.Lang "Log in"}}</h1>
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
   <form method="post" action="/login">
     <input type="hidden" name="next" value="{{.Next}}">
-    <label>Username
+    <label>{{t $.Lang "Username"}}
       <input name="username" autofocus autocomplete="username" required>
     </label>
-    <label>Password
+    <label>{{t $.Lang "Password"}}
       <input name="password" type="password" autocomplete="current-password" required>
     </label>
-    <button type="submit">Log in</button>
+    <button type="submit">{{t $.Lang "Log in"}}</button>
   </form>
 </section>
 {{template "footer" .}}

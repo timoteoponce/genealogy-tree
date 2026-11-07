@@ -1,32 +1,32 @@
 {{template "header" .}}
 <section>
-  <h1>People <span class="muted">({{.Total}})</span></h1>
-  <form method="get" action="/people" class="searchrow">
-    <input name="q" value="{{.Query}}" placeholder="Search by name…" autofocus>
-    <button type="submit">Search</button>
-    {{with .Query}}<a class="linklike" href="/people">Clear</a>{{end}}
+  <h1>{{t $.Lang "People"}} <span class="muted">({{.Total}})</span></h1>
+    <input name="q" value="{{.Query}}" placeholder="{{t $.Lang "Search by name…"}} " autofocus>
+    <input name="q" value="{{.Query}}" placeholder="{{t $.Lang "Search by name…"}} " autofocus>
+    <button type="submit">{{t $.Lang "Search"}}</button>
+    {{with .Query}}<a class="linklike" href="/people">{{t $.Lang "Clear"}}</a>{{end}}
   </form>
 
   {{if .People}}
   <table class="peopletable">
-    <tr><th></th><th>Name</th><th>Born</th><th>Died</th><th></th></tr>
+    <tr><th></th><th>{{t $.Lang "Name"}}</th><th>{{t $.Lang "Born"}}</th><th>{{t $.Lang "Died"}}</th><th></th></tr>
     {{range .People}}
     <tr>
       <td class="avatarcell"><img src="/person/{{.Person.ID}}/thumb" alt="" width="40" height="40"></td>
       <td><a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a></td>
       <td>{{with .Person.BirthYear}}{{.}}{{end}} <span class="muted">{{.Person.BirthPlace}}</span></td>
-      <td>{{with .Person.DeathYear}}{{.}}{{end}} {{if .Person.Living}}<span class="badge living">living</span>{{end}}</td>
-      <td>{{if $.CanEdit}}<a class="small" href="/person/{{.Person.ID}}/edit">edit</a>{{end}}</td>
+      <td>{{with .Person.DeathYear}}{{.}}{{end}} {{if .Person.Living}}<span class="badge living">{{t $.Lang "living"}}</span>{{end}}</td>
+      <td>{{if $.CanEdit}}<a class="small" href="/person/{{.Person.ID}}/edit">{{t $.Lang "edit"}}</a>{{end}}</td>
     </tr>
     {{end}}
   </table>
   <div class="pager">
-    {{if .HasPrev}}<a href="/people?q={{.QueryP}}&amp;page={{.PrevPage}}">← newer</a>{{end}}
-    <span class="muted">page {{.Page}} / {{.Pages}}</span>
-    {{if .HasNext}}<a href="/people?q={{.QueryP}}&amp;page={{.NextPage}}">older →</a>{{end}}
+    {{if .HasPrev}}<a href="/people?q={{.QueryP}}&amp;page={{.PrevPage}}">{{t $.Lang "← newer"}}</a>{{end}}
+    <span class="muted">{{t $.Lang "page %d / %d" .Page .Pages}}</span>
+    {{if .HasNext}}<a href="/people?q={{.QueryP}}&amp;page={{.NextPage}}">{{t $.Lang "older →"}}</a>{{end}}
   </div>
   {{else}}
-  <p class="muted">No matches.</p>
+  <p class="muted">{{t $.Lang "No matches."}}</p>
   {{end}}
 </section>
 {{template "footer" .}}

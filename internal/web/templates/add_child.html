@@ -2,7 +2,7 @@
 <section class="loginbox formbox">
   <h1>{{.Title}}</h1>
   <p class="muted">{{with .Person}}For <a href="/person/{{.ID}}">{{.DisplayName}}</a>{{end}}</p>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
 
   <form method="post" action="{{.Action}}">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
@@ -10,7 +10,7 @@
 
     {{if .Families}}
       {{if gt (len .Families) 1}}
-      <label>Into which family?
+      <label>{{t $.Lang "Into which family?"}}
         <select name="family_id">
           {{range .Families}}<option value="{{.ID}}">{{.Label}}</option>{{end}}
         </select>
@@ -20,35 +20,35 @@
       {{end}}
     {{else}}
       <input type="hidden" name="family_id" value="0">
-      <p class="muted">A new family will be created automatically.</p>
+      <p class="muted">{{t $.Lang "A new family will be created automatically."}}</p>
     {{end}}
 
-    <label>Link an existing person <span class="muted">(search by name)</span>
+    <label>{{t $.Lang "Link an existing person"}} <span class="muted">({{t $.Lang "search by name"}})</span>
       <input type="search" list="people-datalist" data-picker="person_id"
-             placeholder="Type a name…" autocomplete="off">
+             placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
       <input type="hidden" name="person_id" value="">
     </label>
 
-    <h2>…or create a new person</h2>
-    <label>First names <input name="child_given"></label>
-    <label>Surname <input name="child_surname" value="{{with .Person}}{{.Surname}}{{end}}"></label>
-    <label>Sex
+    <h2>{{t $.Lang "…or create a new person"}}</h2>
+    <label>{{t $.Lang "First names"}} <input name="child_given"></label>
+    <label>{{t $.Lang "Surname"}} <input name="child_surname" value="{{with .Person}}{{.Surname}}{{end}}"></label>
+    <label>{{t $.Lang "Sex"}}
       <select name="child_sex">
-        <option value="">Unknown</option>
-        <option value="M">Male</option>
-        <option value="F">Female</option>
-        <option value="O">Other</option>
+        <option value="">{{t $.Lang "Unknown"}}</option>
+        <option value="M">{{t $.Lang "Male"}}</option>
+        <option value="F">{{t $.Lang "Female"}}</option>
+        <option value="O">{{t $.Lang "Other"}}</option>
       </select>
     </label>
-    <label>Birth (year or date) <input name="child_birth" placeholder="e.g. 1994"></label>
-    <label>Link type
+    <label>{{t $.Lang "Birth (year or date)"}} <input name="child_birth" placeholder="{{t $.Lang "e.g. 1994"}}"></label>
+    <label>{{t $.Lang "Link type"}}
       <select name="relationship">
-        <option value="birth">Biological</option>
-        <option value="adopted">Adopted</option>
-        <option value="foster">Foster</option>
+        <option value="birth">{{t $.Lang "Biological"}}</option>
+        <option value="adopted">{{t $.Lang "Adopted"}}</option>
+        <option value="foster">{{t $.Lang "Foster"}}</option>
       </select>
     </label>
-    <button type="submit">Add</button>
+    <button type="submit">{{t $.Lang "Add"}}</button>
   </form>
   {{template "peopleDatalist" .}}
 </section>

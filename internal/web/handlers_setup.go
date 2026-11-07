@@ -21,7 +21,7 @@ func (s *Server) setupPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	data := s.baseData(r, "Welcome")
+	data := s.baseData(r, s.tr(r, "Welcome"))
 	s.render(w, "setup.html", http.StatusOK, data)
 }
 
@@ -39,7 +39,7 @@ func (s *Server) setupSubmit(w http.ResponseWriter, r *http.Request) {
 	confirm := r.PostFormValue("confirm")
 
 	redisplay := func(msg string) {
-		data := s.baseData(r, "Welcome")
+		data := s.baseData(r, s.tr(r, "Welcome"))
 		data["Error"] = msg
 		data["Username"] = username
 		s.render(w, "setup.html", http.StatusUnprocessableEntity, data)

@@ -65,12 +65,12 @@ func (s *Server) ancestorTree(ctx context.Context, person models.Person, gens in
 func (s *Server) fanData(w http.ResponseWriter, r *http.Request) {
 	focusID, err := strconv.ParseInt(r.URL.Query().Get("person"), 10, 64)
 	if err != nil || focusID <= 0 {
-		s.renderError(w, r, http.StatusBadRequest, "expected ?person=<id>")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "expected ?person=<id>"))
 		return
 	}
 	person, err := s.St.Queries().PersonByID(r.Context(), focusID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "person not found")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "person not found"))
 		return
 	}
 	gens := defaultTreeDepth

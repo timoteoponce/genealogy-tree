@@ -1,12 +1,12 @@
 {{template "header" .}}
 <section>
-  <h1>Audit log</h1>
+  <h1>{{t $.Lang "Audit log"}}</h1>
   <table class="peopletable">
-    <tr><th>At</th><th>User</th><th>Action</th><th>Entity</th><th>ID</th><th>Detail</th></tr>
+    <tr><th>{{t $.Lang "At"}}</th><th>{{t $.Lang "User"}}</th><th>{{t $.Lang "Action"}}</th><th>{{t $.Lang "Entity"}}</th><th>{{t $.Lang "ID"}}</th><th>{{t $.Lang "Detail"}}</th></tr>
     {{range .Audit}}
     <tr>
       <td class="muted">{{.At}}</td>
-      <td>{{if .Username}}<b>{{.Username}}</b>{{else}}<span class="muted">system</span>{{end}}</td>
+      <td>{{if .Username}}<b>{{.Username}}</b>{{else}}<span class="muted">{{t $.Lang "system"}}</span>{{end}}</td>
       <td>{{.Action}}</td>
       <td>{{.Entity}}</td>
       <td class="muted">{{with .EntityID}}{{.}}{{end}}</td>

@@ -12,7 +12,7 @@ import (
 // -- login / logout ---------------------------------------------------------
 
 func (s *Server) loginPage(w http.ResponseWriter, r *http.Request) {
-	data := s.baseData(r, "Log in")
+	data := s.baseData(r, s.tr(r, "Log in"))
 	// Already logged in? Straight to the dashboard.
 	if _, ok := auth.FromContext(r.Context()); ok {
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -36,8 +36,8 @@ func (s *Server) loginSubmit(w http.ResponseWriter, r *http.Request) {
 
 	token, err := s.Auth.Login(r.Context(), username, password)
 	if err != nil {
-		data := s.baseData(r, "Log in")
-		data["Error"] = "Wrong username or password."
+		data := s.baseData(r, s.tr(r, "Log in"))
+		data["Error"] = s.tr(r, "Wrong username or password.")
 		data["Next"] = next
 		s.render(w, "login.html", http.StatusUnauthorized, data)
 		return
@@ -74,7 +74,7 @@ func (s *Server) dashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := s.St.Queries()
 
-	data := s.baseData(r, "Home")
+	data := s.baseData(r, s.tr(r, "Home"))
 	data["PeopleCount"], _ = q.CountPeople(ctx)
 	data["FamiliesCount"], _ = q.CountFamilies(ctx)
 	data["MediaCount"], _ = q.CountMedia(ctx)
@@ -103,7 +103,7 @@ func (s *Server) peopleList(w http.ResponseWriter, r *http.Request) {
 		pages = 1
 	}
 
-	data := s.baseData(r, "People")
+	data := s.baseData(r, s.tr(r, "People"))
 	data["Query"] = query
 	data["QueryP"] = url.QueryEscape(query)
 	data["People"] = decoratePeople(ctx, q, people)
@@ -125,18 +125,18 @@ func (s *Server) personPage(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	person, err := q.PersonByID(ctx, id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist (or was removed).")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist (or was removed)."))
 		return
 	}
 
 	data := s.baseData(r, person.DisplayName())
 	data["Person"] = person
-	data["SexLabel"] = sexLabel(person)
+	data["SexLabel"] = s.tr(r, sexLabel(person))
 	data["Events"], _ = q.ListEventsForPerson(ctx, person.ID)
 	data["Citations"], _ = q.ListCitationsForPerson(ctx, person.ID)
 	data["Marriages"] = s.marriagesOf(ctx, person)
@@ -158,12 +158,12 @@ func (s *Server) familyPage(w http.ResponseWriter, r *http.Request) {
 
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	family, err := q.FamilyByID(ctx, famID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist (or was removed).")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist (or was removed)."))
 		return
 	}
 
@@ -184,7 +184,7 @@ func (s *Server) familyPage(w http.ResponseWriter, r *http.Request) {
 		childView = append(childView, map[string]any{"Person": c, "Adopted": rel != models.ChildBirth})
 	}
 
-	data := s.baseData(r, "Family")
+	data := s.baseData(r, s.tr(r, "Family"))
 	data["Family"] = family
 	data["Partners"] = partners
 	data["Children"] = childView

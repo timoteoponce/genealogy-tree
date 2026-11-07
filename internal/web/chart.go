@@ -89,7 +89,7 @@ func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 
 	roots, err := s.rootStats(ctx)
 	if err != nil || len(roots) == 0 {
-		data := s.baseData(r, "Family tree")
+		data := s.baseData(r, s.tr(r, "Family tree"))
 		data["Empty"] = true
 		s.render(w, "tree.html", http.StatusOK, data)
 		return
@@ -106,13 +106,13 @@ func (s *Server) fullTreePage(w http.ResponseWriter, r *http.Request) {
 		person, _ = q.PersonByID(ctx, roots[0].ID)
 	}
 	if person.ID == 0 {
-		data := s.baseData(r, "Family tree")
+		data := s.baseData(r, s.tr(r, "Family tree"))
 		data["Empty"] = true
 		s.render(w, "tree.html", http.StatusOK, data)
 		return
 	}
 
-	data := s.baseData(r, "Family tree")
+	data := s.baseData(r, s.tr(r, "Family tree"))
 	data["Person"] = person
 	data["Gens"] = 0 // 0 = everything reachable
 	data["FullTree"] = true
@@ -146,17 +146,17 @@ func (s *Server) treePage(w http.ResponseWriter, r *http.Request) {
 
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	person, err := q.PersonByID(ctx, id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 	depth := clampInt(atoiDefault(r.URL.Query().Get("gens"), defaultTreeDepth), 1, 8)
 
-	data := s.baseData(r, "Tree: "+person.DisplayName())
+	data := s.baseData(r, s.tr(r, "Tree: %s", person.DisplayName()))
 	data["Person"] = person
 	data["Gens"] = depth
 	data["GensChoices"] = []int{2, 3, 4, 5, 6}

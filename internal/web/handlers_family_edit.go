@@ -15,12 +15,12 @@ func (s *Server) familyEditPage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	family, err := qOf(s, r).FamilyByID(ctx, famID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 		return
 	}
 
@@ -35,7 +35,7 @@ func (s *Server) familyEditPage(w http.ResponseWriter, r *http.Request) {
 	}
 	kids, _ := qOf(s, r).ChildrenOfFamily(ctx, famID)
 
-	data := s.baseData(r, "Edit family")
+	data := s.baseData(r, s.tr(r, "Edit family"))
 	data["Family"] = family
 	data["Partner1"] = partners[0]
 	data["Partner2"] = partners[1]
@@ -51,7 +51,7 @@ func (s *Server) familyUpdate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	f, formErr := familyFromForm(r, famID)
@@ -76,7 +76,7 @@ func (s *Server) familyUpdate(w http.ResponseWriter, r *http.Request) {
 
 	existing, err := q.FamilyByID(ctx, famID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 		return
 	}
 	// Preserve the xref from import if this family had one.
@@ -98,11 +98,11 @@ func (s *Server) familyDelete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	if formVal(r, "confirm") != "yes" {
-		s.renderError(w, r, http.StatusBadRequest, "Deletion needs the confirm box ticked.")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "Deletion needs the confirm box ticked."))
 		return
 	}
 	q := qOf(s, r)
@@ -119,24 +119,24 @@ func (s *Server) familyAttachPartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	slot := formVal(r, "slot")
 	personID := formID(r, "person_id")
 	if slot != "1" && slot != "2" {
-		s.renderError(w, r, http.StatusBadRequest, "slot must be 1 or 2")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "slot must be 1 or 2"))
 		return
 	}
 
 	q := qOf(s, r)
 	family, err := q.FamilyByID(ctx, famID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 		return
 	}
 	if _, err := q.PersonByID(ctx, personID); err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 
@@ -161,18 +161,18 @@ func (s *Server) familyDetachPartner(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	slot := formVal(r, "slot")
 	if slot != "1" && slot != "2" {
-		s.renderError(w, r, http.StatusBadRequest, "slot must be 1 or 2")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "slot must be 1 or 2"))
 		return
 	}
 	q := qOf(s, r)
 	family, err := q.FamilyByID(ctx, famID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 		return
 	}
 	switch slot {
@@ -198,26 +198,26 @@ func (s *Server) familyAddChild(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	q := qOf(s, r)
 	if _, err := q.FamilyByID(ctx, famID); err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 		return
 	}
 
 	var childID int64
 	if id := formID(r, "person_id"); id > 0 {
 		if _, err := q.PersonByID(ctx, id); err != nil {
-			s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 			return
 		}
 		childID = id
 	} else {
 		child, ok := parentFromForm(r, "child")
 		if !ok {
-			s.renderError(w, r, http.StatusUnprocessableEntity, "Pick an existing child or fill in the fields.")
+			s.renderError(w, r, http.StatusUnprocessableEntity, s.tr(r, "Pick an existing child or fill in the fields."))
 			return
 		}
 		surnameFallback(ctx, q, famID, &child)
@@ -263,12 +263,12 @@ func (s *Server) familyRemoveChild(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	famID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown family.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown family."))
 		return
 	}
 	personID := formID(r, "person_id")
 	if personID == 0 {
-		s.renderError(w, r, http.StatusBadRequest, "person_id required.")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "person_id required."))
 		return
 	}
 	q := qOf(s, r)

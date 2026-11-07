@@ -1,15 +1,15 @@
 {{template "header" .}}
 <section>
-  <h1>Users</h1>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
-  {{with .Notice}}<p class="notice">{{.}}</p>{{end}}
+  <h1>{{t $.Lang "Users"}}</h1>
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
+  {{with .Notice}}<p class="notice">{{t $.Lang .}}</p>{{end}}
 
   <table class="peopletable">
-    <tr><th>#</th><th>Username</th><th>Role</th><th>Actions</th></tr>
+    <tr><th>#</th><th>{{t $.Lang "Username"}}</th><th>{{t $.Lang "Role"}}</th><th>{{t $.Lang "Actions"}}</th></tr>
     {{range .Users}}
     <tr>
       <td class="muted">{{.ID}}</td>
-      <td><b>{{.Username}}</b>{{if eq .ID $.CurrentUserID}} <span class="badge">you</span>{{end}}</td>
+      <td><b>{{.Username}}</b>{{if eq .ID $.CurrentUserID}} <span class="badge">{{t $.Lang "you"}}</span>{{end}}</td>
       <td>{{.Role}}</td>
       <td>
         <form method="post" action="/admin/users/{{.ID}}/role" class="inline">
@@ -20,17 +20,17 @@
             <option value="{{$r}}"{{if eq $r $role}} selected{{end}}>{{$r}}</option>
             {{end}}
           </select>
-          <button class="small" type="submit">Set role</button>
+          <button class="small" type="submit">{{t $.Lang "Set role"}}</button>
         </form>
         <form method="post" action="/admin/users/{{.ID}}/password" class="inline">
           <input type="hidden" name="csrf" value="{{$.CSRF}}">
-          <input name="password" type="password" placeholder="new password" size="12">
-          <button class="small" type="submit">Set password</button>
+          <input name="password" type="password" placeholder="{{t $.Lang "new password"}}" size="12">
+          <button class="small" type="submit">{{t $.Lang "Set password"}}</button>
         </form>
         {{if ne .ID $.CurrentUserID}}
         <form method="post" action="/admin/users/{{.ID}}/delete" class="inline">
           <input type="hidden" name="csrf" value="{{$.CSRF}}">
-          <button class="linklike small danger" type="submit">delete</button>
+          <button class="linklike small danger" type="submit">{{t $.Lang "delete"}}</button>
         </form>
         {{end}}
       </td>
@@ -38,21 +38,21 @@
     {{end}}
   </table>
 
-  <h2>Create user</h2>
+  <h2>{{t $.Lang "Create user"}}</h2>
   <form method="post" action="/admin/users" class="formbox">
     <input type="hidden" name="csrf" value="{{.CSRF}}">
-    <label>Username <input name="username" required></label>
-    <label>Password <span class="muted">(min 8 chars)</span>
+    <label>{{t $.Lang "Username"}} <input name="username" required></label>
+    <label>{{t $.Lang "Password"}} <span class="muted">({{t $.Lang "min 8 chars"}})</span>
       <input name="password" type="password" required>
     </label>
-    <label>Role
+    <label>{{t $.Lang "Role"}}
       <select name="role">
-        <option value="viewer">viewer</option>
-        <option value="editor">editor</option>
-        <option value="admin">admin</option>
+        <option value="viewer">{{t $.Lang "viewer"}}</option>
+        <option value="editor">{{t $.Lang "editor"}}</option>
+        <option value="admin">{{t $.Lang "admin"}}</option>
       </select>
     </label>
-    <button type="submit">Create user</button>
+    <button type="submit">{{t $.Lang "Create user"}}</button>
   </form>
 </section>
 {{template "footer" .}}

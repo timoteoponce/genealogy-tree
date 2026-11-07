@@ -29,7 +29,7 @@ func qOf(s *Server, r *http.Request) *store.Queries {
 // with either ?of=<personID> (spouse flow) or ?child=<personID> (parent
 // flow, via /family/add alias) or nothing (plain new person).
 func (s *Server) personNewPage(w http.ResponseWriter, r *http.Request) {
-	data := s.baseData(r, "Add person")
+	data := s.baseData(r, s.tr(r, "Add person"))
 	rel := r.URL.Query().Get("relationship")
 	ofID, _ := strconv.ParseInt(r.URL.Query().Get("of"), 10, 64)
 
@@ -65,7 +65,7 @@ func (s *Server) personCreate(w http.ResponseWriter, r *http.Request) {
 
 	tx, err := s.St.Begin(ctx)
 	if err != nil {
-		s.renderError(w, r, http.StatusInternalServerError, "Database unavailable.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Database unavailable."))
 		return
 	}
 	defer tx.Rollback()
@@ -106,11 +106,11 @@ func (s *Server) personCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tq.InsertAudit(ctx, tx, userIDof(r), "create", "person", &newID, p.DisplayName()); err != nil {
-		s.renderError(w, r, http.StatusInternalServerError, "Audit write failed.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Audit write failed."))
 		return
 	}
 	if err := tx.Commit(); err != nil {
-		s.renderError(w, r, http.StatusInternalServerError, "Could not save changes.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Could not save changes."))
 		return
 	}
 
@@ -126,16 +126,16 @@ func (s *Server) personCreate(w http.ResponseWriter, r *http.Request) {
 func (s *Server) personEditPage(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	p, err := qOf(s, r).PersonByID(r.Context(), id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 
-	data := s.baseData(r, "Edit "+p.DisplayName())
+	data := s.baseData(r, s.tr(r, "Edit %s", p.DisplayName()))
 	data["Mode"] = "edit"
 	data["Action"] = "/person/" + strconv.FormatInt(id, 10) + "/edit"
 	data["P"] = p
@@ -146,7 +146,7 @@ func (s *Server) personEditPage(w http.ResponseWriter, r *http.Request) {
 
 // personFormError re-renders the person form with an error banner.
 func (s *Server) personFormError(w http.ResponseWriter, r *http.Request, mode, action, rel string, ofID int64, msg string, p models.Person) {
-	data := s.baseData(r, "Edit person")
+	data := s.baseData(r, s.tr(r, "Edit person"))
 	data["Mode"] = mode
 	data["Action"] = action
 	data["Rel"] = rel
@@ -163,7 +163,7 @@ func (s *Server) personUpdate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	p, formErr := personFromForm(r, id)
@@ -183,17 +183,17 @@ func (s *Server) personDelete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	if formVal(r, "confirm") != "yes" {
-		s.renderError(w, r, http.StatusBadRequest, "Deletion needs the confirm box ticked.")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "Deletion needs the confirm box ticked."))
 		return
 	}
 	q := qOf(s, r)
 	p, err := q.PersonByID(ctx, id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 	if err := q.DeletePerson(ctx, id); err != nil {
@@ -223,7 +223,7 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-		data := s.baseData(r, "Add parents of "+child.DisplayName())
+		data := s.baseData(r, s.tr(r, "Add parents of %s", child.DisplayName()))
 		data["Child"] = child
 		data["ChildID"] = child.ID
 		data["People"] = s.pickerPeople(ctx)
@@ -240,7 +240,7 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 	childID := formID(r, "child")
 	child, err := q.PersonByID(ctx, childID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That child does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That child does not exist."))
 		return
 	}
 
@@ -261,7 +261,7 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 		}
 		fam, err := q.FamilyByID(ctx, famID)
 		if err != nil {
-			s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 			return
 		}
 		if role == "father" {
@@ -281,7 +281,7 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 	// Create mode: a new family with father/mother, then link the child.
 	tx, err := s.St.Begin(ctx)
 	if err != nil {
-		s.renderError(w, r, http.StatusInternalServerError, "Database unavailable.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Database unavailable."))
 		return
 	}
 	defer tx.Rollback()
@@ -332,11 +332,11 @@ func (s *Server) familyAddParents(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := tq.InsertAudit(ctx, tx, userIDof(r), "add-parents", "family", &famID, child.DisplayName()); err != nil {
 		tx.Rollback()
-		s.renderError(w, r, http.StatusInternalServerError, "Audit write failed.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Audit write failed."))
 		return
 	}
 	if err := tx.Commit(); err != nil {
-		s.renderError(w, r, http.StatusInternalServerError, "Could not save changes.")
+		s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Could not save changes."))
 		return
 	}
 	http.Redirect(w, r, "/family/"+strconv.FormatInt(famID, 10), http.StatusFound)
@@ -391,7 +391,7 @@ func (s *Server) parentFamilyToFill(ctx context.Context, q *store.Queries, child
 func (s *Server) renderAddParentsError(w http.ResponseWriter, r *http.Request, child models.Person, msg string) {
 	ctx := r.Context()
 	q := qOf(s, r)
-	data := s.baseData(r, "Add parents")
+	data := s.baseData(r, s.tr(r, "Add parents"))
 	data["Child"] = child
 	data["ChildID"] = child.ID
 	data["People"] = s.pickerPeople(ctx)
@@ -435,7 +435,7 @@ func (s *Server) personOf(w http.ResponseWriter, r *http.Request, param string) 
 	}
 	p, err := qOf(s, r).PersonByID(r.Context(), id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return models.Person{}, err
 	}
 	return p, nil
@@ -453,7 +453,7 @@ func (s *Server) familyNew(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-		data := s.baseData(r, "Add spouse of "+partner.DisplayName())
+		data := s.baseData(r, s.tr(r, "Add spouse of %s", partner.DisplayName()))
 		data["Partner"] = partner
 		data["People"] = s.pickerPeople(ctx)
 		s.render(w, "add_spouse.html", http.StatusOK, data)
@@ -463,7 +463,7 @@ func (s *Server) familyNew(w http.ResponseWriter, r *http.Request) {
 	partnerID := formID(r, "partner")
 	partner, err := q.PersonByID(ctx, partnerID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 
@@ -471,21 +471,21 @@ func (s *Server) familyNew(w http.ResponseWriter, r *http.Request) {
 	var spouseID int64
 	if id := formID(r, "spouse_person"); id > 0 {
 		if _, err := q.PersonByID(ctx, id); err != nil {
-			s.renderError(w, r, http.StatusNotFound, "The chosen spouse does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "The chosen spouse does not exist."))
 			return
 		}
 		if id == partnerID {
-			s.renderError(w, r, http.StatusUnprocessableEntity, "Cannot marry a person to themselves.")
+			s.renderError(w, r, http.StatusUnprocessableEntity, s.tr(r, "Cannot marry a person to themselves."))
 			return
 		}
 		spouseID = id
 	} else {
 		spouse, ok := parentFromForm(r, "spouse")
 		if !ok {
-			data := s.baseData(r, "Add spouse")
+			data := s.baseData(r, s.tr(r, "Add spouse"))
 			data["Partner"] = partner
 			data["People"] = s.pickerPeople(ctx)
-			data["Error"] = "Pick an existing person or fill in the new spouse fields."
+			data["Error"] = s.tr(r, "Pick an existing person or fill in the new spouse fields.")
 			s.render(w, "add_spouse.html", http.StatusUnprocessableEntity, data)
 			return
 		}

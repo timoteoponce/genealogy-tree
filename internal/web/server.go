@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 
 	"genealogy-tree/internal/auth"
 	"genealogy-tree/internal/config"
@@ -33,6 +34,8 @@ type Server struct {
 // NewServer parses templates once and returns a ready server.
 func NewServer(cfg config.Config, st *store.Store) (*Server, error) {
 	funcs := template.FuncMap{
+		// t translates key into the active language (English fallback).
+		"t": func(lang, key string, args ...any) string { return tr(lang, key, args...) },
 		// list returns its string arguments as a slice (template helper).
 		"list": func(args ...string) []string { return args },
 		// dict builds a map from alternating key/value args (for passing
@@ -86,6 +89,9 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /login", s.loginPage)
 	mux.HandleFunc("POST /login", s.loginSubmit)
 	mux.HandleFunc("POST /logout", s.wrap("viewer", s.logout))
+
+	// Language switch (public; sets a cookie and redirects back).
+	mux.HandleFunc("POST /lang", s.languageSwitch)
 
 	mux.HandleFunc("GET /{$}", s.wrap("viewer", s.dashboard))
 	mux.HandleFunc("GET /people", s.wrap("viewer", s.peopleList))
@@ -143,7 +149,47 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("POST /admin/settings", s.wrap("admin", s.adminSettingsSubmit))
 	mux.HandleFunc("GET /admin/audit", s.wrap("admin", s.adminAuditPage))
 
-	return mux
+	return s.langMiddleware(mux)
+}
+
+// langMiddleware sets the lang cookie when ?lang is present, then delegates.
+func (s *Server) langMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if v := r.URL.Query().Get("lang"); v != "" {
+			if l := normalizeLang(v); l != "" {
+				http.SetCookie(w, &http.Cookie{
+					Name:     "lang",
+					Value:    l,
+					Path:     "/",
+					MaxAge:   60 * 60 * 24 * 365,
+					SameSite: http.SameSiteLaxMode,
+					Secure:   s.Cfg.CookieSecure,
+				})
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// languageSwitch handles POST /lang: sets the cookie and redirects back.
+func (s *Server) languageSwitch(w http.ResponseWriter, r *http.Request) {
+	lang := normalizeLang(r.PostFormValue("lang"))
+	if lang == "" {
+		lang = "en"
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "lang",
+		Value:    lang,
+		Path:     "/",
+		MaxAge:   60 * 60 * 24 * 365,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   s.Cfg.CookieSecure,
+	})
+	next := r.PostFormValue("next")
+	if next == "" || !strings.HasPrefix(next, "/") || strings.HasPrefix(next, "//") {
+		next = "/"
+	}
+	http.Redirect(w, r, next, http.StatusFound)
 }
 
 func (s *Server) wrap(minRole string, h http.HandlerFunc) http.HandlerFunc {
@@ -167,6 +213,8 @@ func (s *Server) baseData(r *http.Request, title string) map[string]any {
 	data := map[string]any{
 		"Title":    title,
 		"SiteName": siteName,
+		"Lang":     s.requestLang(r),
+		"Path":     r.URL.Path,
 		"CanEdit":  false,
 		"CanAdmin": false,
 	}
@@ -190,7 +238,7 @@ func (s *Server) render(w http.ResponseWriter, page string, status int, data map
 
 // renderError shows the friendly error page.
 func (s *Server) renderError(w http.ResponseWriter, r *http.Request, status int, msg string) {
-	data := s.baseData(r, "Error")
+	data := s.baseData(r, s.tr(r, "Error"))
 	data["Code"] = status
 	data["Message"] = msg
 	s.render(w, "error.html", status, data)

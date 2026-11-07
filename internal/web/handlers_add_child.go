@@ -65,7 +65,7 @@ func (s *Server) addSiblingPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(s.targetFamilies(r.Context(), qOf(s, r), person, true)) == 0 {
-		s.renderError(w, r, http.StatusBadRequest, "This person has no recorded parents, so a sibling cannot be added here.")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "This person has no recorded parents, so a sibling cannot be added here."))
 		return
 	}
 	s.renderAddChildForm(w, r, true, "")
@@ -75,12 +75,12 @@ func (s *Server) addSiblingPage(w http.ResponseWriter, r *http.Request) {
 func (s *Server) addChildPerson(w http.ResponseWriter, r *http.Request) (models.Person, error) {
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return models.Person{}, err
 	}
 	person, err := qOf(s, r).PersonByID(r.Context(), id)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return models.Person{}, err
 	}
 	return person, nil
@@ -92,10 +92,10 @@ func (s *Server) renderAddChildForm(w http.ResponseWriter, r *http.Request, sibl
 	if err != nil {
 		return
 	}
-	title := "Add child of " + person.DisplayName()
+	title := s.tr(r, "Add child of %s", person.DisplayName())
 	action := "/person/" + strconv.FormatInt(person.ID, 10) + "/child/new"
 	if siblingMode {
-		title = "Add sibling of " + person.DisplayName()
+		title = s.tr(r, "Add sibling of %s", person.DisplayName())
 		action = "/person/" + strconv.FormatInt(person.ID, 10) + "/sibling/new"
 	}
 
@@ -131,7 +131,7 @@ func (s *Server) addChildSave(w http.ResponseWriter, r *http.Request, siblingMod
 	personID := formID(r, "person")
 	person, err := q.PersonByID(ctx, personID)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 
@@ -139,7 +139,7 @@ func (s *Server) addChildSave(w http.ResponseWriter, r *http.Request, siblingMod
 	var famID int64
 	if familyID > 0 {
 		if _, err := q.FamilyByID(ctx, familyID); err != nil {
-			s.renderError(w, r, http.StatusNotFound, "That family does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
 			return
 		}
 		famID = familyID
@@ -157,7 +157,7 @@ func (s *Server) addChildSave(w http.ResponseWriter, r *http.Request, siblingMod
 	var childID int64
 	if id := formID(r, "person_id"); id > 0 {
 		if _, err := q.PersonByID(ctx, id); err != nil {
-			s.renderError(w, r, http.StatusNotFound, "The chosen person does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "The chosen person does not exist."))
 			return
 		}
 		childID = id

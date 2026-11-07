@@ -1,20 +1,19 @@
 {{template "header" .}}
 <section class="loginbox">
-  <h1>Welcome! Set up the first admin</h1>
-  <p class="muted">There are no accounts yet — create the administrator that will
-    manage users, imports and settings.</p>
-  {{with .Error}}<p class="error">{{.}}</p>{{end}}
+  <h1>{{t $.Lang "Welcome! Set up the first admin"}}</h1>
+  <p class="muted">{{t $.Lang "There are no accounts yet — create the administrator that will\n    manage users, imports and settings."}}</p>
+  {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
   <form method="post" action="/setup">
-    <label>Username
+    <label>{{t $.Lang "Username"}}
       <input name="username" value="{{with .Username}}{{.}}{{end}}" autofocus autocomplete="username" required>
     </label>
-    <label>Password <span class="muted">(min 8 characters)</span>
+    <label>{{t $.Lang "Password"}} <span class="muted">({{t $.Lang "min 8 characters"}})</span>
       <input name="password" type="password" autocomplete="new-password" required>
     </label>
-    <label>Repeat password
+    <label>{{t $.Lang "Repeat password"}}
       <input name="confirm" type="password" autocomplete="new-password" required>
     </label>
-    <button type="submit">Create admin account</button>
+    <button type="submit">{{t $.Lang "Create admin account"}}</button>
   </form>
 </section>
 {{template "footer" .}}

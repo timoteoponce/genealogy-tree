@@ -30,12 +30,12 @@ func (s *Server) personMediaUpload(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	personID, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown person.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown person."))
 		return
 	}
 	q := qOf(s, r)
 	if _, err := q.PersonByID(ctx, personID); err != nil {
-		s.renderError(w, r, http.StatusNotFound, "That person does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That person does not exist."))
 		return
 	}
 
@@ -47,14 +47,14 @@ func (s *Server) personMediaUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		s.renderError(w, r, http.StatusUnprocessableEntity, "No file in the upload.")
+		s.renderError(w, r, http.StatusUnprocessableEntity, s.tr(r, "No file in the upload."))
 		return
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		s.renderError(w, r, http.StatusBadRequest, "Could not read the upload.")
+		s.renderError(w, r, http.StatusBadRequest, s.tr(r, "Could not read the upload."))
 		return
 	}
 	mediaID := formID(r, "media_id")
@@ -68,7 +68,7 @@ func (s *Server) personMediaUpload(w http.ResponseWriter, r *http.Request) {
 	if mediaID > 0 {
 		// Upgrade an object-placeholder row (keeps its linkage/caption).
 		if _, err := q.MediaByID(ctx, mediaID); err != nil {
-			s.renderError(w, r, http.StatusNotFound, "That media row does not exist.")
+			s.renderError(w, r, http.StatusNotFound, s.tr(r, "That media row does not exist."))
 			return
 		}
 		if err := q.UpgradeMedia(ctx, mediaID, m.Filename, m.Mime, len(data), thumb, data); err != nil {
@@ -76,7 +76,7 @@ func (s *Server) personMediaUpload(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if err := q.SetProfilePhoto(ctx, personID, mediaID); err != nil {
-			s.renderError(w, r, http.StatusInternalServerError, "Photo attached but profile marking failed.")
+			s.renderError(w, r, http.StatusInternalServerError, s.tr(r, "Photo attached but profile marking failed."))
 			return
 		}
 		q.InsertAuditLog(ctx, s.St.DB, userIDof(r), "attach-photo", "media", &mediaID, m.Filename)
@@ -164,7 +164,7 @@ func (s *Server) mediaSetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	m, err := qOf(s, r).MediaByID(ctx, id)
 	if err != nil || m.PersonID == nil {
-		s.renderError(w, r, http.StatusNotFound, "That photo does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That photo does not exist."))
 		return
 	}
 	if err := qOf(s, r).SetProfilePhoto(ctx, *m.PersonID, id); err != nil {
@@ -185,7 +185,7 @@ func (s *Server) mediaCaption(w http.ResponseWriter, r *http.Request) {
 	}
 	m, err := qOf(s, r).MediaByID(ctx, id)
 	if err != nil || m.PersonID == nil {
-		s.renderError(w, r, http.StatusNotFound, "That photo does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That photo does not exist."))
 		return
 	}
 	if err := qOf(s, r).UpdateMediaCaption(ctx, id, formVal(r, "caption")); err != nil {
@@ -205,7 +205,7 @@ func (s *Server) mediaDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	m, err := qOf(s, r).MediaByID(ctx, id)
 	if err != nil || m.PersonID == nil {
-		s.renderError(w, r, http.StatusNotFound, "That photo does not exist.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "That photo does not exist."))
 		return
 	}
 	if err := qOf(s, r).DeleteMedia(ctx, id); err != nil {

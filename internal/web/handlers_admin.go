@@ -14,7 +14,7 @@ import (
 func (s *Server) requireAdmin(w http.ResponseWriter, r *http.Request) bool {
 	sess, ok := auth.FromContext(r.Context())
 	if !ok || sess.User.Role != "admin" {
-		s.renderError(w, r, http.StatusForbidden, "This area is restricted to administrators.")
+		s.renderError(w, r, http.StatusForbidden, s.tr(r, "This area is restricted to administrators."))
 		return false
 	}
 	return true
@@ -29,7 +29,7 @@ func (s *Server) adminOverview(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := qOf(s, r)
 
-	data := s.baseData(r, "Admin")
+	data := s.baseData(r, s.tr(r, "Admin"))
 	data["PeopleCount"], _ = q.CountPeople(ctx)
 	data["FamiliesCount"], _ = q.CountFamilies(ctx)
 	data["MediaCount"], _ = q.CountMedia(ctx)
@@ -50,7 +50,7 @@ func (s *Server) adminUsersPage(w http.ResponseWriter, r *http.Request, formErr,
 	if sess, ok := auth.FromContext(r.Context()); ok {
 		currentID = sess.User.ID
 	}
-	data := s.baseData(r, "Users")
+	data := s.baseData(r, s.tr(r, "Users"))
 	data["Users"], _ = q.ListUsers(ctx)
 	data["CurrentUserID"] = currentID
 	data["Error"] = formErr
@@ -133,7 +133,7 @@ func (s *Server) adminUserSetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown user.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown user."))
 		return
 	}
 	password := r.PostFormValue("password")
@@ -161,7 +161,7 @@ func (s *Server) adminUserDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := parseID(r)
 	if err != nil {
-		s.renderError(w, r, http.StatusNotFound, "Unknown user.")
+		s.renderError(w, r, http.StatusNotFound, s.tr(r, "Unknown user."))
 		return
 	}
 	q := qOf(s, r)
@@ -184,7 +184,7 @@ func (s *Server) adminImportPage(w http.ResponseWriter, r *http.Request, report 
 	if !s.requireAdmin(w, r) {
 		return
 	}
-	data := s.baseData(r, "Import GEDCOM")
+	data := s.baseData(r, s.tr(r, "Import GEDCOM"))
 	data["History"], _ = qOf(s, r).RecentImports(r.Context(), 10)
 	if report != nil {
 		data["Report"] = report
@@ -229,7 +229,7 @@ func (s *Server) adminSettingsPage(w http.ResponseWriter, r *http.Request, notic
 	}
 	q := qOf(s, r)
 	settings, _ := q.Settings(r.Context())
-	data := s.baseData(r, "Settings")
+	data := s.baseData(r, s.tr(r, "Settings"))
 	data["Settings"] = settings
 	data["Notice"] = notice
 	data["Error"] = formErr
@@ -270,7 +270,7 @@ func (s *Server) adminAuditPage(w http.ResponseWriter, r *http.Request) {
 		s.renderError(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
-	data := s.baseData(r, "Audit log")
+	data := s.baseData(r, s.tr(r, "Audit log"))
 	data["Audit"] = entries
 	s.render(w, "admin_audit.html", http.StatusOK, data)
 }
