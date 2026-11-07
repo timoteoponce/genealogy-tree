@@ -20,16 +20,14 @@ if (cont && window.f3) {
 
     const chart = f3.createChart('#chart', data);
 
-    // Node cards: photo + name + life years (imageRect = photo-left node).
-    // "compact" mode uses small circular photo chips for dense trees.
+    // Node cards: photo-left cards (imageRect) in BOTH modes. Compact mode
+    // (dense trees) renders the same cards smaller via #chart[data-compact]
+    // CSS. The name lives INSIDE the card box, which family-chart measures
+    // (offsetWidth/offsetHeight) — unlike the imageCircle style, whose
+    // absolutely-positioned label escapes the box and overlaps neighbours.
     const card = chart.setCardHtml();
-    if (mode === 'compact') {
-      card.setStyle('imageCircle');
-      card.setCardDisplay([['first name', 'last name']]);
-    } else {
-      card.setStyle('imageRect');
-      card.setCardDisplay([['first name', 'last name'], ['years']]);
-    }
+    card.setStyle('imageRect');
+    card.setCardDisplay([['first name', 'last name'], ['years']]);
 
     // Layout: vertical (ancestors ↑ / descendants ↓) or horizontal
     // (ancestors ← / descendants →). Horizontal suits descendant-heavy or
@@ -37,12 +35,12 @@ if (cont && window.f3) {
     if (orient === 'h') {
       chart.setOrientationHorizontal();
       // In horizontal mode: x spacing = gap between generations (wide, to
-      // fit 240px cards); y spacing = gap between siblings.
-      chart.setCardXSpacing(mode === 'compact' ? 150 : 280);
-      chart.setCardYSpacing(mode === 'compact' ? 70 : 95);
+      // fit the cards); y spacing = gap between siblings.
+      chart.setCardXSpacing(mode === 'compact' ? 220 : 280);
+      chart.setCardYSpacing(mode === 'compact' ? 78 : 95);
     } else {
-      chart.setCardXSpacing(mode === 'compact' ? 110 : 260);
-      chart.setCardYSpacing(mode === 'compact' ? 110 : 140);
+      chart.setCardXSpacing(mode === 'compact' ? 215 : 260);
+      chart.setCardYSpacing(mode === 'compact' ? 100 : 140);
     }
 
     // gens=0 means "everything" (full tree) — render up to a deep ceiling.
@@ -50,6 +48,64 @@ if (cont && window.f3) {
     chart.setProgenyDepth(depth).setAncestryDepth(depth);
     chart.setTransitionTime(400);
     chart.updateTree({ initial: true });
+
+    // Family-chart auto-fits the whole tree into the container on first
+    // render, which shrinks large trees to an unreadable scale. Reset to
+    // 100% centered on the focus person, then offer zoom controls.
+    let fitMode = false;
+    window.__f3chart = chart;
+    setTimeout(() => {
+      if (!fitMode) resetZoomToFocus();
+      addZoomControls();
+    }, 120);
+
+    function resetZoomToFocus() {
+      try {
+        const svg = document.querySelector('#chart svg.main_svg');
+        const holder = svg && (svg.__zoomObj ? svg : (svg.parentNode && svg.parentNode.__zoomObj ? svg.parentNode : null));
+        const zoomObj = holder && holder.__zoomObj;
+        const mainDatum = chart.store.getTreeMainDatum();
+        const container = document.getElementById('chart');
+        if (!svg || !zoomObj || !mainDatum || !container) return;
+        const d3 = window.d3;
+        if (!d3) return;
+        f3.handlers.cardToMiddle({
+          datum: mainDatum,
+          svg: svg,
+          svg_dim: { width: container.clientWidth, height: container.clientHeight },
+          scale: 1,
+          transition_time: 0,
+        });
+      } catch (e) { console.error('zoom reset failed:', e); }
+    }
+
+    function addZoomControls() {
+      const container = document.getElementById('chart');
+      if (!container || container.querySelector('.zoom-ctrls')) return;
+      const el = document.createElement('div');
+      el.className = 'zoom-ctrls';
+      el.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in">+</button>'
+        + '<button type="button" data-z="out" aria-label="Zoom out">−</button>'
+        + '<button type="button" data-z="fit" aria-label="Fit whole tree">fit</button>';
+      container.appendChild(el);
+      const svg = document.querySelector('#chart svg.main_svg');
+      const holder = svg && (svg.__zoomObj ? svg : (svg.parentNode && svg.parentNode.__zoomObj ? svg.parentNode : null));
+      const zoomObj = holder && holder.__zoomObj;
+      el.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-z]');
+        if (!btn) return;
+        const z = btn.dataset.z;
+        if (z === 'in' && zoomObj) {
+          d3.select(holder).call(zoomObj.scaleBy, 1.3);
+        } else if (z === 'out' && zoomObj) {
+          d3.select(holder).call(zoomObj.scaleBy, 0.77);
+        } else if (z === 'fit') {
+          fitMode = true;
+          chart.updateTree({ initial: true });
+          setTimeout(() => { fitMode = false; }, 250);
+        }
+      });
+    }
 
     // Click = re-center on that person; double-click = open profile page.
     if (typeof card.setOnCardClick === 'function') {
