@@ -35,23 +35,30 @@ docker compose exec familytree rm /tmp/tree.ged
 
 ## 2. HTTPS
 
-Put a TLS-terminating reverse proxy in front (compose already exposes
-8080). Caddy example:
+The app binds to `127.0.0.1:8080` on the VPS so Nginx can proxy to it without
+exposing the app port publicly. For `family.timoteoponce.com`, start with this
+HTTP server block; Certbot can then add the TLS certificate and HTTPS redirect:
 
-```
-family.example.com {
-    reverse_proxy 127.0.0.1:8080
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name family.timoteoponce.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 ```
 
-Then set, in `docker-compose.yml`:
-
-```yaml
-environment:
-  APP_COOKIE_SECURE: "true"
-```
-
-and `docker compose up -d` again. (nginx equivalent: `proxy_pass http://127.0.0.1:8080;`)
+`APP_COOKIE_SECURE` is enabled in Compose for HTTPS cookies. Complete Certbot's
+TLS setup before using the site to sign in, since browsers only send those
+cookies over HTTPS.
 
 ## 3. Backups
 
@@ -94,10 +101,10 @@ Migrations run automatically on boot (schema_version tracking).
 
 The `master` branch runs CI on pushes and pull requests. A push to `master`
 that passes formatting, `go vet`, `go test`, and the Docker build deploys the
-image to the VPS over SSH. The workflow transfers the image archive directly;
-it does not require a container registry. It runs `docker compose up` from the
-existing deployment directory, so keep that directory and its Compose data
-volume in place between deploys.
+image and current Compose file to the VPS over SSH. The workflow transfers the
+image archive directly; it does not require a container registry. It runs
+`docker compose up` from the existing deployment directory, so keep that
+directory and its Compose data volume in place between deploys.
 
 Add these repository Actions secrets in GitHub:
 

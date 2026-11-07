@@ -45,7 +45,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docker-image
-          path: ${{ env.IMAGE_NAME }}.tar.gz
+          path: |
+            ${{ env.IMAGE_NAME }}.tar.gz
+            docker-compose.yml
           retention-days: 7
           if-no-files-found: error
 
@@ -102,14 +104,16 @@ jobs:
           image_tar="${IMAGE_NAME}.tar"
           gunzip -c "${IMAGE_NAME}.tar.gz" > "/tmp/${image_tar}"
           scp "/tmp/${image_tar}" "${user}@${host}:/tmp/${image_tar}"
+          scp docker-compose.yml "${user}@${host}:/tmp/genealogy-tree-compose.yml"
           quoted_dest=$(printf '%q' "$dest")
           ssh "${user}@${host}" "DEPLOY_PATH=${quoted_dest} bash -s" <<'SCRIPT'
             set -euo pipefail
-            test -f "$DEPLOY_PATH/docker-compose.yml"
+            test -d "$DEPLOY_PATH"
             docker load -i /tmp/genealogy-tree.tar
+            cp /tmp/genealogy-tree-compose.yml "$DEPLOY_PATH/docker-compose.yml"
             cd "$DEPLOY_PATH"
             docker compose up -d --no-build --remove-orphans familytree
-            rm -f /tmp/genealogy-tree.tar
+            rm -f /tmp/genealogy-tree.tar /tmp/genealogy-tree-compose.yml
             echo "Deployed genealogy-tree"
           SCRIPT
 

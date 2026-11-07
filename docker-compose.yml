@@ -3,11 +3,11 @@ services:
     build: .
     image: genealogy-tree
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       DATA_DIR: /data
       # Set to true when serving over HTTPS (nginx/Caddy in front).
-      APP_COOKIE_SECURE: "false"
+      APP_COOKIE_SECURE: "true"
     volumes:
       - familytree-data:/data
     restart: unless-stopped
