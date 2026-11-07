@@ -161,8 +161,15 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18); cursor: pointer;
 }
 .zoom-ctrls button:hover { background: #ffffff; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22); }
+/* Connectors: subtle curved links (family-chart sets stroke=#fff as an
+   attribute, so the CSS must override it with a visible color). */
+.f3 .link {
+  stroke: #9fb6c2;
+  stroke-width: 1.5px;
+}
 .f3 .link.f3-path-to-main {
   stroke: #5b7f92;
+  stroke-width: 2px;
 }
 
 /* Slightly larger card text. */
