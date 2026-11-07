@@ -52,11 +52,12 @@
             </form>
             {{end}}
             {{if .ImportNote}}
-            <form method="post" action="/person/{{$.Person.ID}}/media" enctype="multipart/form-data" class="inline uploadform">
+            <form method="post" action="/person/{{$.Person.ID}}/media" enctype="multipart/form-data" class="inline">
               <input type="hidden" name="csrf" value="{{$.CSRF}}">
               <input type="hidden" name="media_id" value="{{.ID}}">
-              <input type="file" name="file" required>
-              <button class="small" type="submit">attach</button>
+              <label class="btn text small filebtn">Attach photo
+                <input type="file" name="file" required onchange="this.form.submit()">
+              </label>
             </form>
             {{end}}
             <form method="post" action="/media/{{.ID}}/delete" class="inline">

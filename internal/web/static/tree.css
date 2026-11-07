@@ -1,6 +1,12 @@
 /* genealogy-tree tree overrides — loaded AFTER family-chart.css so these
    win. Turns the chart into a clean light "node graph" instead of the
-   library's dark bubble theme. */
+   library's dark bubble theme.
+
+   family-chart 0.9.0 card DOM (both modes):
+     .card.card-{male|female|genderless}.card-depth-N(.card-main)
+       .card-inner.card-image-{rect|circle}
+         img (or svg) + .card-label
+*/
 
 /* Chart cursor: grab while panning, pointer over clickable cards. */
 #chart, #fan, #graph { cursor: grab; }
@@ -16,24 +22,43 @@
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Node card container */
+/* Card container: soft shadow, rounded, light. */
 .f3 div.card .card-inner {
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
-  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
 }
-.f3 div.card .card-inner:hover {
+.f3 div.card:hover .card-inner {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
-  transform: translateY(-1px);
+}
+.f3 div.card-main .card-inner {
+  outline: 3px solid #3f7d4e;
+  outline-offset: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.20);
 }
 
-/* Photo-left node layout */
+/* Gender accents (tree/rect mode only): soft tint + colored left edge.
+   Compact circle cards must NOT get the left border — it would oval them. */
+.f3 div.card-male .card-image-rect {
+  background-color: var(--male-color);
+  border-left: 4px solid #7a9fb0;
+}
+.f3 div.card-female .card-image-rect {
+  background-color: var(--female-color);
+  border-left: 4px solid #c48a92;
+}
+.f3 div.card-genderless .card-image-rect {
+  background-color: var(--genderless-color);
+  border-left: 4px solid #b7b2a7;
+}
+
+/* -- tree mode: photo-left cards (imageRect) ------------------------------- */
 .f3 div.card-image-rect {
   width: 240px;
   min-height: 64px;
   gap: 12px;
   padding: 9px;
   align-items: center;
+  border-radius: 12px;
 }
 .f3 div.card-image-rect img {
   width: 54px;
@@ -42,16 +67,15 @@
   object-fit: cover;
   background: #dedbd3;
   flex: 0 0 auto;
-  border: 2px solid #ffffff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  margin-right: 10px;
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px rgba(0, 0, 0, 0.08);
 }
 .f3 div.card-image-rect .card-label {
   text-align: left;
   font-weight: 600;
   line-height: 1.3;
   color: #2c2a26;
-  display: flex;
-  flex-direction: column;
   gap: 2px;
 }
 .f3 div.card-image-rect .card-label div:nth-child(2) {
@@ -60,30 +84,45 @@
   font-size: 0.85em;
 }
 
-/* Gender accents: soft tint + colored left edge instead of a full wash */
-.f3 div.card-male .card-inner {
-  background-color: var(--male-color);
-  border-left: 4px solid #7a9fb0;
+/* -- compact mode: circular photo chips (imageCircle) ---------------------- */
+.f3 div.card-image-circle {
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
 }
-.f3 div.card-female .card-inner {
-  background-color: var(--female-color);
-  border-left: 4px solid #c48a92;
+.f3 div.card-image-circle img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #dedbd3;
+  box-shadow: 0 0 0 2px #ffffff, 0 1px 3px rgba(0, 0, 0, 0.25);
 }
-.f3 div.card-genderless .card-inner {
-  background-color: var(--genderless-color);
-  border-left: 4px solid #b7b2a7;
+/* Name label below the chip: light pill, not the default dark bar. */
+.f3 div.card-image-circle div.card-label {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  max-width: 160px;
+  min-height: 0;
+  text-align: center;
+  background-color: #ffffff;
+  color: #2c2a26;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 2px 9px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* Focus (main) card */
-.f3 div.card-inner.f3-path-to-main {
-  outline: 3px solid #3f7d4e;
-  outline-offset: 2px;
-}
-.f3 .card-main-outline {
-  stroke: #3f7d4e;
-}
-
-/* Connectors: subtle curved links */
+/* Connectors: subtle curved links. */
 .f3 .link {
   stroke: #b7c6cf;
 }
@@ -91,7 +130,7 @@
   stroke: #5b7f92;
 }
 
-/* Slightly larger card text */
+/* Slightly larger card text. */
 .f3 div.card .card-label {
   font-size: 14px;
 }

@@ -266,14 +266,34 @@ a.seg:hover { background: var(--surface-container-high); text-decoration: none; 
 label.inline { display: inline-flex; gap: .4rem; align-items: center; font-weight: 400; }
 
 /* -- gallery -------------------------------------------------------------- */
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: .8rem; }
-.mediaitem { margin: 0; padding: .5rem; background: var(--surface); border: 1px solid var(--outline-variant); border-radius: var(--r-md); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.mediaitem {
+  margin: 0; padding: .6rem; background: var(--surface);
+  border: 1px solid var(--outline-variant); border-radius: var(--r-md);
+  display: flex; flex-direction: column; gap: .45rem;
+}
 .mediaitem.profile { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-.mediaitem img { border-radius: var(--r-sm); object-fit: cover; background: var(--surface-variant); display: block; width: 100%; height: auto; }
-.mediaitem figcaption { font-size: .8rem; color: var(--on-surface-variant); margin-top: .3rem; }
-.mediabar { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .3rem; }
-.uploadform { display: flex; gap: .4rem; align-items: center; margin-top: .5rem; flex-wrap: wrap; }
-.uploadform input[type="file"] { max-width: 14rem; }
+.mediaitem img {
+  border-radius: var(--r-sm); object-fit: cover; background: var(--surface-variant);
+  display: block; width: 100%; height: auto; aspect-ratio: 1 / 1;
+}
+.mediaitem figcaption {
+  font-size: .8rem; color: var(--on-surface-variant);
+  display: flex; gap: .3rem; align-items: center; flex-wrap: wrap; min-height: 1.2em;
+}
+.mediabar {
+  display: flex; flex-direction: column; gap: .3rem; align-items: stretch;
+  margin-top: auto;
+}
+.mediabar form { display: flex; align-items: center; gap: .45rem; }
+.uploadform { flex-wrap: wrap; }
+.uploadform input[type="file"] { flex: 1 1 auto; min-width: 0; max-width: 100%; font-size: .78rem; padding: .3rem; }
+.mediabar .linklike.small, .mediabar button.small { font-size: .8rem; }
+.filebtn { position: relative; overflow: hidden; }
+.filebtn input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
+  cursor: pointer; padding: 0; border: 0; border-radius: 0;
+}
 
 .notice { color: var(--on-primary-container); background: var(--primary-container); padding: .45rem .75rem; border-radius: var(--r-sm); }
 
