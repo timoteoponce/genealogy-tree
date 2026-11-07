@@ -93,18 +93,18 @@ func (s *Server) Router() http.Handler {
 	// Language switch (public; sets a cookie and redirects back).
 	mux.HandleFunc("POST /lang", s.languageSwitch)
 
-	mux.HandleFunc("GET /{$}", s.wrap("viewer", s.dashboard))
-	mux.HandleFunc("GET /people", s.wrap("viewer", s.peopleList))
-	mux.HandleFunc("GET /person/{id}", s.wrap("viewer", s.personPage))
-	mux.HandleFunc("GET /family/{id}", s.wrap("viewer", s.familyPage))
-	mux.HandleFunc("GET /media/{id}/thumb", s.wrap("viewer", s.mediaThumb))
-	mux.HandleFunc("GET /media/{id}/full", s.wrap("viewer", s.mediaFull))
-	mux.HandleFunc("GET /person/{id}/thumb", s.wrap("viewer", s.personPhoto))
-	mux.HandleFunc("GET /person/{id}/tree", s.wrap("viewer", s.treePage))
-	mux.HandleFunc("GET /tree", s.wrap("viewer", s.fullTreePage))
-	mux.HandleFunc("GET /tree.json", s.wrap("viewer", s.treeData))
-	mux.HandleFunc("GET /fan.json", s.wrap("viewer", s.fanData))
-	mux.HandleFunc("GET /graph.json", s.wrap("viewer", s.graphData))
+	mux.HandleFunc("GET /{$}", s.publicWrap(s.dashboard))
+	mux.HandleFunc("GET /people", s.publicWrap(s.peopleList))
+	mux.HandleFunc("GET /person/{id}", s.publicWrap(s.personPage))
+	mux.HandleFunc("GET /family/{id}", s.publicWrap(s.familyPage))
+	mux.HandleFunc("GET /media/{id}/thumb", s.publicWrap(s.mediaThumb))
+	mux.HandleFunc("GET /media/{id}/full", s.publicWrap(s.mediaFull))
+	mux.HandleFunc("GET /person/{id}/thumb", s.publicWrap(s.personPhoto))
+	mux.HandleFunc("GET /person/{id}/tree", s.publicWrap(s.treePage))
+	mux.HandleFunc("GET /tree", s.publicWrap(s.fullTreePage))
+	mux.HandleFunc("GET /tree.json", s.publicWrap(s.treeData))
+	mux.HandleFunc("GET /fan.json", s.publicWrap(s.fanData))
+	mux.HandleFunc("GET /graph.json", s.publicWrap(s.graphData))
 
 	mux.HandleFunc("POST /person/{id}/media", s.wrap("editor", s.personMediaUpload))
 	mux.HandleFunc("POST /media/{id}/profile", s.wrap("editor", s.mediaSetProfile))
@@ -194,6 +194,10 @@ func (s *Server) languageSwitch(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) wrap(minRole string, h http.HandlerFunc) http.HandlerFunc {
 	return s.Auth.Wrap(minRole, h)
+}
+
+func (s *Server) publicWrap(h http.HandlerFunc) http.HandlerFunc {
+	return s.Auth.WrapPublic(h)
 }
 
 // -- template data ----------------------------------------------------------

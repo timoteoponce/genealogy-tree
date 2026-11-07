@@ -110,22 +110,40 @@ func get(t *testing.T, c *http.Client, path string) (int, string) {
 
 var csrfRe = regexp.MustCompile(`name="csrf" value="([0-9a-f]+)"`)
 
-func TestAnonymousRedirectsToLogin(t *testing.T) {
+func TestAnonymousCanBrowseButCannotEdit(t *testing.T) {
 	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
 
 	noFollow := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
 		return http.ErrUseLastResponse
 	}}
-	resp, err := noFollow.Get(e.ts.URL + "/person/1")
+	for _, path := range []string{"/", "/people", "/person/1", "/family/1", "/tree", "/person/1/tree", "/tree.json", "/fan.json", "/graph.json", "/media/1/thumb"} {
+		resp, err := noFollow.Get(e.ts.URL + path)
+		if err != nil {
+			t.Fatalf("GET %s: %v", path, err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode == http.StatusFound && strings.Contains(resp.Header.Get("Location"), "/login") {
+			t.Errorf("anonymous GET %s was redirected to login", path)
+		}
+		if resp.StatusCode >= http.StatusInternalServerError {
+			t.Errorf("anonymous GET %s returned %d", path, resp.StatusCode)
+		}
+	}
+
+	before, err := e.St.Queries().CountPeople(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusFound || !strings.Contains(resp.Header.Get("Location"), "/login") {
-		t.Fatalf("want login redirect, got %d → %q", resp.StatusCode, resp.Header.Get("Location"))
+	status, _ := post(t, noFollow, e.ts.URL+"/person/new", url.Values{"given_names": {"Anon"}})
+	if status != http.StatusFound {
+		t.Fatalf("anonymous edit POST should redirect to login, got %d", status)
 	}
-	if !strings.Contains(resp.Header.Get("Location"), "%2Fperson%2F1") {
-		t.Errorf("redirect should carry ?next=<uri>, got %q", resp.Header.Get("Location"))
+	after, err := e.St.Queries().CountPeople(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after != before {
+		t.Fatalf("anonymous edit changed people count: before %d, after %d", before, after)
 	}
 }
 
@@ -267,7 +285,7 @@ func TestLogoutAndCSRF(t *testing.T) {
 	if resp.StatusCode != http.StatusFound {
 		t.Fatalf("logout with csrf: %d", resp.StatusCode)
 	}
-	status, _ := get(t, c, e.ts.URL+"/people")
+	status, _ := get(t, c, e.ts.URL+"/person/new")
 	if status != http.StatusFound {
 		t.Errorf("after logout session should be gone, got %d", status)
 	}

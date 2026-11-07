@@ -46,8 +46,8 @@ Once one account exists, `/setup` closes permanently.
   preserved as raw facts, OBJE media as placeholders, atomic replace-tree
   transaction. Available via CLI and the admin UI (with a full report).
 - **Roles**: admin (users/settings/import/deletes) > editor (edit people/
-  families, photos) > viewer (read-only). Anonymous users get redirected to
-  the login page.
+  families, photos) > viewer (read-only). Anonymous visitors can browse the
+  full tree and its photos, but must log in to make changes.
 - **Editing**: person & family forms with free-text GEDCOM-style dates
   ("ABT 1847", "BET 1900 AND 1905"), guided add-parents/add-spouse/add-child
   flows, everything audited in an admin-visible log.

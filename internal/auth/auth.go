@@ -3,8 +3,9 @@
 //
 // Model:
 //   - Session rows store the SHA-256 of the cookie token, never the token.
-//   - Every request passes through (Auth).Wrap(minRole, handler): anonymous
+//   - Protected requests pass through (Auth).Wrap(minRole, handler): anonymous
 //     users are redirected to /login, under-privileged ones get a 403 page.
+//     WrapPublic allows anonymous read requests while preserving valid sessions.
 //   - Every POST an authenticated user sends must include the per-session
 //     CSRF token as form field "csrf" (checked inside Wrap).
 //   - The /login POST is the only form without CSRF (no session exists yet);
@@ -177,20 +178,35 @@ func (a *Auth) Session(r *http.Request) (Session, bool) {
 // under-privileged users with a 403 page, and validates the CSRF form field
 // on POST. The session is injected into the request context.
 func (a *Auth) Wrap(minRole string, next http.HandlerFunc) http.HandlerFunc {
+	return a.wrap(minRole, false, next)
+}
+
+// WrapPublic allows anonymous access to a public handler. Valid sessions are
+// still resolved and injected into its request context.
+func (a *Auth) WrapPublic(next http.HandlerFunc) http.HandlerFunc {
+	return a.wrap("", true, next)
+}
+
+func (a *Auth) wrap(minRole string, public bool, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if public && r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		sess, ok := a.Session(r)
-		if !ok {
+		if !ok && !public {
 			http.Redirect(w, r, "/login?next="+url.QueryEscape(r.URL.RequestURI()), http.StatusFound)
 			return
 		}
-		if minRole != "" && models.RoleWeights[sess.User.Role] < models.RoleWeights[minRole] {
+		if ok && minRole != "" && models.RoleWeights[sess.User.Role] < models.RoleWeights[minRole] {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, "<h1>403 Forbidden</h1><p>Your account (%s) lacks the %s role for this action.</p>",
 				html.EscapeString(sess.User.Username), minRole)
 			return
 		}
-		if r.Method == http.MethodPost {
+		if ok && r.Method == http.MethodPost {
 			if token := r.PostFormValue("csrf"); token == "" || token != sess.CSRF {
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				w.WriteHeader(http.StatusForbidden)
@@ -198,6 +214,9 @@ func (a *Auth) Wrap(minRole string, next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 		}
-		next(w, r.WithContext(context.WithValue(r.Context(), ctxKeySession, sess)))
+		if ok {
+			r = r.WithContext(context.WithValue(r.Context(), ctxKeySession, sess))
+		}
+		next(w, r)
 	}
 }

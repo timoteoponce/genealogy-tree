@@ -53,10 +53,13 @@ migrations (internal/db/migrations/*.sql) — sequential, embedded
 
 - bcrypt passwords; sessions store SHA-256 hashes of random cookie tokens
   (expiry filtered in SQL; sliding 30-day TTL refreshed at half-life).
-- `auth.Wrap(minRole, handler)` guards every route: anonymous → 302
+- `auth.Wrap(minRole, handler)` guards protected routes: anonymous → 302
   /login?next=…; insufficient role → 403 page; POST without matching
-  per-session CSRF token → 403. /login POST is the sole anonymous form.
-- Roles: admin > editor > viewer; anonymous sees nothing.
+  per-session CSRF token → 403. `auth.WrapPublic` allows anonymous GET/HEAD
+  requests while resolving and preserving any valid session.
+- Roles: admin > editor > viewer. Anonymous visitors can read tree pages,
+  data feeds, and media; all tree mutations and administration require login.
+  `/login` and first-run `/setup` remain available without a session.
 
 ## Import engine
 

@@ -39,7 +39,7 @@ func emptyEnv(t *testing.T) *env {
 func TestFirstRunSetupFlow(t *testing.T) {
 	e := emptyEnv(t)
 
-	// 1. Every anonymous page funnels to /setup when there are no users.
+	// 1. Public browsing works before setup; login still directs to setup.
 	noFollow := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
 		return http.ErrUseLastResponse
 	}}
@@ -49,9 +49,8 @@ func TestFirstRunSetupFlow(t *testing.T) {
 	}
 	loc := resp.Header.Get("Location")
 	resp.Body.Close()
-	// wrap → /login?next=… ; login GET → /setup (verified next).
-	if !strings.Contains(loc, "/login") {
-		t.Fatalf("want /login chain, got %q", loc)
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("anonymous /people before setup: got %d", resp.StatusCode)
 	}
 	resp, _ = noFollow.Get(e.ts.URL + "/login")
 	loc = resp.Header.Get("Location")
