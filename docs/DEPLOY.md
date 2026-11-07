@@ -90,6 +90,30 @@ docker compose up -d
 
 Migrations run automatically on boot (schema_version tracking).
 
+### Automatic deploys from GitHub Actions
+
+The `master` branch runs CI on pushes and pull requests. A push to `master`
+that passes formatting, `go vet`, `go test`, and the Docker build deploys the
+image to the VPS over SSH. The workflow transfers the image archive directly;
+it does not require a container registry. It runs `docker compose up` from the
+existing deployment directory, so keep that directory and its Compose data
+volume in place between deploys.
+
+Add these repository Actions secrets in GitHub:
+
+| Secret | Value |
+|---|---|
+| `SSH_PRIVATE_KEY` | Private key for an account that can SSH to the VPS and run Docker / Docker Compose. |
+| `SSH_HOST` | VPS hostname or IP address. |
+| `SSH_USER` | SSH account name. |
+| `DEPLOY_PATH` | Absolute path on the VPS containing this repository's `docker-compose.yml`, such as `/opt/genealogy-tree`. |
+
+On the VPS, clone the repository at the deployment path and complete the first
+`docker compose up -d` manually. This creates the persistent Compose volume and
+starts the app. Future successful pushes to `master` replace the image and
+recreate the container while retaining that volume. The SSH account must be
+able to run Docker and Docker Compose without an interactive password prompt.
+
 ## 6. Health
 
 The image defines `HEALTHCHECK` = `familytree healthcheck` which hits

@@ -1,0 +1,116 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: genealogy-tree
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Check formatting
+        run: |
+          files=$(gofmt -l .)
+          if [ -n "$files" ]; then
+            printf '%s\n' "$files"
+            exit 1
+          fi
+
+      - name: Vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.IMAGE_NAME }}:latest .
+
+      - name: Save Docker image
+        run: docker save ${{ env.IMAGE_NAME }}:latest | gzip > ${{ env.IMAGE_NAME }}.tar.gz
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: ${{ env.IMAGE_NAME }}.tar.gz
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          log-public-key: false
+
+      - name: Add VPS host key
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          set -euo pipefail
+          host=$(printf '%s' "$SSH_HOST" | tr -d '[:space:]')
+          test -n "$host"
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$host" >> ~/.ssh/known_hosts
+
+      - name: Transfer and deploy
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          user=$(printf '%s' "$SSH_USER" | tr -d '[:space:]')
+          host=$(printf '%s' "$SSH_HOST" | tr -d '[:space:]')
+          dest=$(printf '%s' "$DEPLOY_PATH" | tr -d '\r\n')
+          dest="${dest#"${dest%%[![:space:]]*}"}"
+          dest="${dest%"${dest##*[![:space:]]}"}"
+          test -n "$user"
+          test -n "$host"
+          case "$dest" in
+            /*) ;;
+            *) echo "DEPLOY_PATH must be an absolute path"; exit 1 ;;
+          esac
+          case "$dest" in
+            /|/home|/root|/var|/usr|/tmp|/opt)
+              echo "DEPLOY_PATH must point to the genealogy-tree deployment directory"
+              exit 1
+              ;;
+          esac
+
+          image_tar="${IMAGE_NAME}.tar"
+          gunzip -c "${IMAGE_NAME}.tar.gz" > "/tmp/${image_tar}"
+          scp "/tmp/${image_tar}" "${user}@${host}:/tmp/${image_tar}"
+          quoted_dest=$(printf '%q' "$dest")
+          ssh "${user}@${host}" "DEPLOY_PATH=${quoted_dest} bash -s" <<'SCRIPT'
+            set -euo pipefail
+            test -f "$DEPLOY_PATH/docker-compose.yml"
+            docker load -i /tmp/genealogy-tree.tar
+            cd "$DEPLOY_PATH"
+            docker compose up -d --no-build --remove-orphans familytree
+            rm -f /tmp/genealogy-tree.tar
+            echo "Deployed genealogy-tree"
+          SCRIPT
+
+          rm -f "/tmp/${image_tar}"
