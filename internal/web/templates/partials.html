@@ -9,7 +9,7 @@
 </head>
 <body>
 <nav class="topnav">
-  <a class="brand" href="/">🌳 {{.SiteName}}</a>
+  <a class="brand" href="/">{{template "iconTree" .}} {{.SiteName}}</a>
   <div class="navlinks">
     <a href="/people">People</a>
     <a href="/tree">Tree</a>
@@ -50,3 +50,5 @@
 {{define "peopleDatalist"}}<datalist id="people-datalist">
   {{range .People}}<option value="{{.DisplayName}}" data-id="{{.ID}}" label="{{.DisplayName}} · {{.Years}}"></option>{{end}}
 </datalist>{{end}}
+
+{{define "iconTree"}}<svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 7 10h3l-3.5 5H9l-3.5 6h13L15 15h2.5L14 10h3z"/></svg>{{end}}

@@ -89,7 +89,7 @@
       {{range .Descendants}}
       <li style="margin-left: {{.Depth}}rem;">
         <a href="/person/{{.Person.ID}}"><b>{{.Person.DisplayName}}</b></a> <span class="muted">{{.Person.Years}}</span>
-        {{with .Spouse}} ⚭ <a href="/person/{{.ID}}">{{.DisplayName}}</a>{{end}}
+        {{with .Spouse}} <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></svg> <a href="/person/{{.ID}}">{{.DisplayName}}</a>{{end}}
       </li>
       {{end}}
     </ul>
