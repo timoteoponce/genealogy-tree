@@ -27,12 +27,12 @@
   </div>
 
   <div class="toolbar">
-    <form class="picker" method="get" action="{{$base}}">
+    <form class="picker" method="get" action="{{$base}}" data-navigate="profile">
       <input type="search" list="people-datalist" class="picker-input"
              placeholder="Search for a person…" autocomplete="off"
-             data-picker="person" aria-label="Focus on a person">
+             data-picker="person" aria-label="Open a person's profile">
       <input type="hidden" name="person" value="">
-      <button type="submit" class="btn">Focus</button>
+      <button type="submit" class="btn">Open profile</button>
     </form>
     {{template "peopleDatalist" .}}
 
