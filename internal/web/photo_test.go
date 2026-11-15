@@ -14,13 +14,21 @@ func TestPersonPhotoPlaceholderAndProfile(t *testing.T) {
 	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
 
 	// No photo yet → silhouette SVG (200, image/svg+xml).
-	status, body := get(t, e.admin, e.ts.URL+"/person/1/thumb")
-	if status != http.StatusOK || !strings.Contains(body, "<svg") {
-		t.Fatalf("placeholder avatar: %d (len %d)", status, len(body))
+	resp, err := e.admin.Get(e.ts.URL + "/person/1/thumb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := ioReadAll(t, resp)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK || !strings.Contains(body, "<svg") {
+		t.Fatalf("placeholder avatar: %d (len %d)", resp.StatusCode, len(body))
+	}
+	if resp.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("placeholder cache policy: %q", resp.Header.Get("Cache-Control"))
 	}
 
 	// Unknown person → 404.
-	status, _ = get(t, e.admin, e.ts.URL+"/person/999/thumb")
+	status, _ := get(t, e.admin, e.ts.URL+"/person/999/thumb")
 	if status != http.StatusNotFound {
 		t.Fatalf("unknown person avatar should 404, got %d", status)
 	}
@@ -33,13 +41,16 @@ func TestPersonPhotoPlaceholderAndProfile(t *testing.T) {
 		t.Fatalf("seed upload: %d", status)
 	}
 
-	resp, err := e.admin.Get(e.ts.URL + "/person/1/thumb")
+	resp, err = e.admin.Get(e.ts.URL + "/person/1/thumb")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK || !strings.HasPrefix(resp.Header.Get("Content-Type"), "image/jpeg") {
 		t.Fatalf("profile thumb: status %d, ctype %q", resp.StatusCode, resp.Header.Get("Content-Type"))
+	}
+	if resp.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("profile cache policy: %q", resp.Header.Get("Cache-Control"))
 	}
 }
 

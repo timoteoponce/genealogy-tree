@@ -216,7 +216,7 @@ func (s *Server) personPhoto(w http.ResponseWriter, r *http.Request) {
 		if d, err := q.MediaData(r.Context(), photoID); err == nil && len(d.Thumb) > 0 {
 			// thumbs are always encoded JPEG, regardless of the original type
 			w.Header().Set("Content-Type", "image/jpeg")
-			w.Header().Set("Cache-Control", "private, max-age=86400")
+			w.Header().Set("Cache-Control", "no-store")
 			w.Write(d.Thumb)
 			return
 		}
@@ -232,7 +232,7 @@ func servePlaceholder(w http.ResponseWriter) {
 		return
 	}
 	w.Header().Set("Content-Type", "image/svg+xml; charset=utf-8")
-	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("Cache-Control", "no-store")
 	w.Write(body)
 }
 

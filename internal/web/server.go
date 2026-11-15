@@ -121,7 +121,7 @@ func (s *Server) Router() http.Handler {
 	mux.HandleFunc("GET /fan.json", s.publicWrap(s.fanData))
 	mux.HandleFunc("GET /graph.json", s.publicWrap(s.graphData))
 
-	mux.HandleFunc("POST /person/{id}/media", s.wrap("editor", s.personMediaUpload))
+	mux.HandleFunc("POST /person/{id}/media", s.limitPhotoUpload(s.wrap("editor", s.personMediaUpload)))
 	mux.HandleFunc("POST /media/{id}/profile", s.wrap("editor", s.mediaSetProfile))
 	mux.HandleFunc("POST /media/{id}/caption", s.wrap("editor", s.mediaCaption))
 	mux.HandleFunc("POST /media/{id}/delete", s.wrap("editor", s.mediaDelete))

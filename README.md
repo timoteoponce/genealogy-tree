@@ -51,9 +51,11 @@ Once one account exists, `/setup` closes permanently.
 - **Editing**: person & family forms with free-text GEDCOM-style dates
   ("ABT 1847", "BET 1900 AND 1905"), guided add-parents/add-spouse/add-child
   flows, everything audited in an admin-visible log.
-- **Photos**: uploads become embedded 256px JPEG thumbnails (stored as
-  SQLite blobs — the whole app is one backupable file); GEDCOM photo
-  placeholders can be upgraded in place.
+- **Photos**: uploads (up to 10 MB and 40 megapixels) are stored as a
+  compressed JPEG up to 2048px on its longest side plus a 256px thumbnail.
+  Originals, metadata, GIF animation and transparency are not retained;
+  existing photos are unchanged. Both versions are stored as SQLite blobs;
+  GEDCOM photo placeholders can be upgraded in place.
 - **Tree**: interactive `family-chart` (click re-centers, double-click opens
   the profile, generations selector) plus a plain list view fallback; served
   fully offline from vendored dist files.

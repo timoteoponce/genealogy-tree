@@ -289,7 +289,13 @@ label.inline { display: inline-flex; gap: .4rem; align-items: center; font-weigh
 .mediabar form { display: flex; align-items: center; gap: .45rem; }
 .uploadform { flex-wrap: wrap; }
 .uploadform input[type="file"] { flex: 1 1 auto; min-width: 0; max-width: 100%; font-size: .78rem; padding: .3rem; }
-.mediabar .linklike.small, .mediabar button.small { font-size: .8rem; }
+.mediabar .media-action {
+  background: transparent; color: var(--primary); padding: .35rem .6rem;
+  font-size: .8rem; box-shadow: none;
+}
+.mediabar .media-action:hover { background: var(--surface-container); }
+.mediabar .media-delete { color: var(--error); }
+.mediabar .media-delete:hover { background: var(--error-container); }
 .filebtn { position: relative; overflow: hidden; }
 .filebtn input[type="file"] {
   position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%;
