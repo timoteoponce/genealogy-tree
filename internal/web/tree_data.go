@@ -144,7 +144,7 @@ func (s *Server) chartDataOf(ctx context.Context, focus models.Person, gens int)
 				FirstName: p.GivenNames,
 				LastName:  p.Surname,
 				Birthday:  yearsPrefix(p),
-				Avatar:    "/person/" + strID(p.ID) + "/thumb",
+				Avatar:    "/person/" + strID(p.ID) + "/thumb?v=2",
 				Years:     p.Years(),
 			},
 			Rels: chartRels{},

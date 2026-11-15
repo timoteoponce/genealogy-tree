@@ -1,7 +1,7 @@
 {{template "header" .}}
 <section class="personpage">
   <div class="personhead">
-    <img class="portrait" src="/person/{{.Person.ID}}/thumb" alt="" width="128" height="128">
+    <img class="portrait" src="/person/{{.Person.ID}}/thumb?v=2" alt="" width="128" height="128">
     <div class="pheadinfo">
       <h1>{{.Person.DisplayName}}</h1>
       <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">{{t $.Lang "living"}}</span>{{end}}</p>
@@ -42,7 +42,7 @@
       <div class="gallery">
         {{range .Media}}
         <figure class="mediaitem{{if .IsProfile}} profile{{end}}">
-          <a href="/media/{{.ID}}/full"><img src="/media/{{.ID}}/thumb" alt="{{.Caption}}" width="120" height="120"></a>
+          <a href="/media/{{.ID}}/full"><img src="/media/{{.ID}}/thumb?v=2" alt="{{.Caption}}" width="120" height="120"></a>
           <figcaption>{{with .Caption}}{{.}}{{end}}{{if .ImportNote}}<span class="badge">{{t $.Lang "placeholder"}}</span>{{end}}{{if .IsProfile}}<span class="badge living">{{t $.Lang "portrait"}}</span>{{end}}</figcaption>
           {{if $.CanEdit}}
           <div class="mediabar">

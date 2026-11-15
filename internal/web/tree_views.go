@@ -39,7 +39,7 @@ func (s *Server) ancestorTree(ctx context.Context, person models.Person, gens in
 			Name:   p.DisplayName(),
 			Years:  p.Years(),
 			Sex:    p.Sex,
-			Avatar: "/person/" + personIDstr(p.ID) + "/thumb",
+			Avatar: "/person/" + personIDstr(p.ID) + "/thumb?v=2",
 		}
 		if depth >= gens {
 			return n
@@ -125,7 +125,7 @@ func (s *Server) graphData(w http.ResponseWriter, r *http.Request) {
 			Name:   p.DisplayName(),
 			Years:  p.Years(),
 			Sex:    p.Sex,
-			Avatar: "/person/" + personIDstr(p.ID) + "/thumb",
+			Avatar: "/person/" + personIDstr(p.ID) + "/thumb?v=2",
 		})
 	}
 

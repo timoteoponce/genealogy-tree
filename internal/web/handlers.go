@@ -199,6 +199,7 @@ func (s *Server) familyPage(w http.ResponseWriter, r *http.Request) {
 // thumbnail, or a neutral placeholder silhouette when they have none. This
 // is the canonical avatar URL used everywhere (lists, profile, tree nodes),
 // so no one ever sees a broken-image icon.
+// The UI adds ?v=2 to bypass copies cached before thumbnails used no-store.
 func (s *Server) personPhoto(w http.ResponseWriter, r *http.Request) {
 	id, err := parseID(r)
 	if err != nil {
@@ -237,6 +238,7 @@ func servePlaceholder(w http.ResponseWriter) {
 }
 
 func (s *Server) mediaThumb(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
 	id, err := parseID(r)
 	if err != nil {
 		http.NotFound(w, r)
@@ -248,7 +250,6 @@ func (s *Server) mediaThumb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "image/jpeg") // thumbs are always JPEG
-	w.Header().Set("Cache-Control", "private, max-age=86400")
 	w.Write(d.Thumb)
 }
 
