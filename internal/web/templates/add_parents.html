@@ -41,7 +41,7 @@
 
     <h2>{{t $.Lang "Family"}}</h2>
     <label>{{t $.Lang "Marriage — date or year"}}
-      <input name="marriage_date" placeholder='{{t $.Lang "e.g. \"1948\", \"ABT 1949\""}}'>
+      <input type="date" name="marriage_date" placeholder='{{t $.Lang "e.g. \"1948\", \"ABT 1949\""}}'>
     </label>
     <label>{{t $.Lang "Marriage — place"}}
       <input name="marriage_place">
@@ -64,9 +64,9 @@
 {{define "parentFields"}}
 <label>{{t $.Lang "Link an existing person"}} <span class="muted">({{t $.Lang "search by name"}})</span>
   <input type="search" list="people-datalist" data-picker="{{.Suffix}}_person" placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
-  <input type="hidden" name="{{.Suffix}}_person" value="">
+  <input type="hidden" name="{{.Suffix}}_person" value="{{.PersonID}}">
 </label>
-<label>{{t $.Lang "…or create new — first names"}} <input name="{{.Suffix}}_given"></label>
+<label>{{t $.Lang "…or create new — first names"}} <input name="{{.Suffix}}_given" value="{{.Given}}"></label>
 <label>{{t $.Lang "Surname"}} <input name="{{.Suffix}}_surname" value="{{.Surname}}"></label>
-<label>{{t $.Lang "Birth (year or date)"}} <input name="{{.Suffix}}_birth" placeholder="{{t $.Lang "e.g. 1920"}}"></label>
+<label>{{t $.Lang "Birth (year or date)"}} <input type="date" name="{{.Suffix}}_birth" value="{{.Birth}}" placeholder="{{t $.Lang "e.g. 1920"}}"></label>
 {{end}}

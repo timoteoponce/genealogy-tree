@@ -12,6 +12,7 @@ import (
 
 	"genealogy-tree/internal/auth"
 	"genealogy-tree/internal/config"
+	"genealogy-tree/internal/gedcom"
 	"genealogy-tree/internal/models"
 	"genealogy-tree/internal/store"
 )
@@ -36,6 +37,20 @@ func NewServer(cfg config.Config, st *store.Store) (*Server, error) {
 	funcs := template.FuncMap{
 		// t translates key into the active language (English fallback).
 		"t": func(lang, key string, args ...any) string { return tr(lang, key, args...) },
+		// formatDate renders a date in a consistent human-readable form.
+		"formatDate": func(v any) string {
+			switch x := v.(type) {
+			case string:
+				return gedcom.FormatDate(x)
+			case *string:
+				if x == nil {
+					return ""
+				}
+				return gedcom.FormatDate(*x)
+			default:
+				return ""
+			}
+		},
 		// list returns its string arguments as a slice (template helper).
 		"list": func(args ...string) []string { return args },
 		// dict builds a map from alternating key/value args (for passing

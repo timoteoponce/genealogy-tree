@@ -23,6 +23,12 @@
       <p class="muted">{{t $.Lang "A new family will be created automatically."}}</p>
     {{end}}
 
+    <h2>{{t $.Lang "Parents"}}</h2>
+    <p class="muted">{{t $.Lang "Edit the parents this child will be linked to."}}</p>
+
+    {{template "parentFields" dict "Suffix" "father" "Given" .FatherGiven "Surname" .FatherSurname "PersonID" .FatherID "Birth" .FatherBirth "T" .T "Lang" .Lang}}
+    {{template "parentFields" dict "Suffix" "mother" "Given" .MotherGiven "Surname" .MotherSurname "PersonID" .MotherID "Birth" .MotherBirth "T" .T "Lang" .Lang}}
+
     <label>{{t $.Lang "Link an existing person"}} <span class="muted">({{t $.Lang "search by name"}})</span>
       <input type="search" list="people-datalist" data-picker="person_id"
              placeholder="{{t $.Lang "Type a name…"}} " autocomplete="off">
@@ -40,7 +46,7 @@
         <option value="O">{{t $.Lang "Other"}}</option>
       </select>
     </label>
-    <label>{{t $.Lang "Birth (year or date)"}} <input name="child_birth" placeholder="{{t $.Lang "e.g. 1994"}}"></label>
+    <label>{{t $.Lang "Birth (year or date)"}} <input type="date" name="child_birth" placeholder="{{t $.Lang "e.g. 1994"}}"></label>
     <label>{{t $.Lang "Link type"}}
       <select name="relationship">
         <option value="birth">{{t $.Lang "Biological"}}</option>

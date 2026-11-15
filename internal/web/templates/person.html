@@ -24,11 +24,11 @@
     <div class="col">
       <h2>{{t $.Lang "Life facts"}}</h2>
       <table class="facttable">
-        {{with .Person.BirthDate}}<tr><th>{{t $.Lang "Born"}}</th><td>{{.}} {{with $.Person.BirthPlace}}· {{.}}{{end}}</td></tr>{{end}}
+        {{with .Person.BirthDate}}<tr><th>{{t $.Lang "Born"}}</th><td>{{formatDate .}} {{with $.Person.BirthPlace}}· {{.}}{{end}}</td></tr>{{end}}
         {{range .Events}}
-        <tr><th>{{.Tag}}</th><td>{{with .Date}}{{.}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>
+        <tr><th>{{.Tag}}</th><td>{{with .Date}}{{formatDate .}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>
         {{end}}
-        {{with .Person.DeathDate}}<tr><th>{{t $.Lang "Died"}}</th><td>{{.}} {{with $.Person.DeathPlace}}· {{.}}{{end}}</td></tr>{{end}}
+        {{with .Person.DeathDate}}<tr><th>{{t $.Lang "Died"}}</th><td>{{formatDate .}} {{with $.Person.DeathPlace}}· {{.}}{{end}}</td></tr>{{end}}
       </table>
 
       {{with .Person.Notes}}

@@ -5,7 +5,7 @@
       <h1>{{t $.Lang "Family"}}</h1>
       <p class="muted">
         {{range $i, $p := .Partners}}{{if $i}} &nbsp;·&nbsp; {{end}}<a href="/person/{{$p.ID}}">{{$p.DisplayName}}</a>{{end}}
-        {{if .Family.MarriageDate}} · {{t $.Lang "married"}} {{.Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
+        {{if .Family.MarriageDate}} · {{t $.Lang "married"}} {{formatDate .Family.MarriageDate}}{{if .Family.MarriagePlace}} ({{.Family.MarriagePlace}}){{end}}{{end}}
         {{if eq .Family.Status "divorced"}} · <span class="badge">{{t $.Lang "divorced"}}</span>{{end}}
       </p>
       {{if .CanEdit}}
@@ -27,7 +27,7 @@
   {{with .Events}}
   <h2>{{t $.Lang "Family events"}}</h2>
   <table class="facttable">
-    {{range .}}<tr><th>{{.Tag}}</th><td>{{with .Date}}{{.}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>{{end}}
+    {{range .}}<tr><th>{{.Tag}}</th><td>{{with .Date}}{{formatDate .}} {{end}}{{with .Place}}· {{.}} {{end}}{{with .Detail}}{{.}}{{end}}</td></tr>{{end}}
   </table>
   {{end}}
 

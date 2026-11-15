@@ -21,10 +21,10 @@
         <option value="F">{{t $.Lang "Female"}}</option>
       </select>
     </label>
-    <label>{{t $.Lang "Birth (year or date)"}} <input name="spouse_birth"></label>
+    <label>{{t $.Lang "Birth (year or date)"}} <input type="date" name="spouse_birth"></label>
 
     <h2>{{t $.Lang "Marriage"}}</h2>
-    <label>{{t $.Lang "Date or year"}} <input name="marriage_date" placeholder='{{t $.Lang "e.g. \"2011-05-14\", \"ABT 1949\""}}'></label>
+    <label>{{t $.Lang "Date or year"}} <input type="date" name="marriage_date" placeholder='{{t $.Lang "e.g. \"2011-05-14\", \"ABT 1949\""}}'></label>
     <label>{{t $.Lang "Place"}} <input name="marriage_place"></label>
     <button type="submit">{{t $.Lang "Create family"}}</button>
   </form>

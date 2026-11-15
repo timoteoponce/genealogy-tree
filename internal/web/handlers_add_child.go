@@ -99,13 +99,75 @@ func (s *Server) renderAddChildForm(w http.ResponseWriter, r *http.Request, sibl
 		action = "/person/" + strconv.FormatInt(person.ID, 10) + "/sibling/new"
 	}
 
+	q := qOf(s, r)
+	ctx := r.Context()
+
+	// Determine the "current couple" for pre-filling the parent fields.
+	fatherGiven, fatherSurname, fatherID, fatherBirth := "", "", int64(0), ""
+	motherGiven, motherSurname, motherID, motherBirth := "", "", int64(0), ""
+
+	// Prefer an existing family of the context person (their own family).
+	fams := s.targetFamilies(ctx, q, person, siblingMode)
+	// For child mode targetFamilies are person's own families; for sibling mode
+	// they are parents' families. Only pre-fill parents in child mode.
+	if !siblingMode && len(fams) > 0 {
+		if fam, err := q.FamilyByID(ctx, fams[0].ID); err == nil {
+			var p1, p2 *models.Person
+			if fam.Partner1ID != nil {
+				if pp, err := q.PersonByID(ctx, *fam.Partner1ID); err == nil {
+					pp2 := pp
+					p1 = &pp2
+				}
+			}
+			if fam.Partner2ID != nil {
+				if pp, err := q.PersonByID(ctx, *fam.Partner2ID); err == nil {
+					pp2 := pp
+					p2 = &pp2
+				}
+			}
+			// Assign father/mother by sex, falling back to slot order.
+			assign := func(pp models.Person) {
+				if pp.Sex == models.SexFemale {
+					motherGiven, motherSurname, motherID = pp.GivenNames, pp.Surname, pp.ID
+					motherBirth = pp.BirthDate
+				} else {
+					fatherGiven, fatherSurname, fatherID = pp.GivenNames, pp.Surname, pp.ID
+					fatherBirth = pp.BirthDate
+				}
+			}
+			if p1 != nil {
+				assign(*p1)
+			}
+			if p2 != nil {
+				assign(*p2)
+			}
+		}
+	} else if !siblingMode {
+		// No existing family: pre-fill the context person as one parent.
+		if person.Sex == models.SexFemale {
+			motherGiven, motherSurname, motherID = person.GivenNames, person.Surname, person.ID
+			motherBirth = person.BirthDate
+		} else {
+			fatherGiven, fatherSurname, fatherID = person.GivenNames, person.Surname, person.ID
+			fatherBirth = person.BirthDate
+		}
+	}
+
 	data := s.baseData(r, title)
 	data["Title"] = title
 	data["Action"] = action
 	data["Person"] = person
-	data["Families"] = s.targetFamilies(r.Context(), qOf(s, r), person, siblingMode)
+	data["Families"] = fams
 	data["SiblingMode"] = siblingMode
 	data["People"] = s.pickerPeople(r.Context())
+	data["FatherGiven"] = fatherGiven
+	data["FatherSurname"] = fatherSurname
+	data["FatherID"] = fatherID
+	data["FatherBirth"] = fatherBirth
+	data["MotherGiven"] = motherGiven
+	data["MotherSurname"] = motherSurname
+	data["MotherID"] = motherID
+	data["MotherBirth"] = motherBirth
 	if errMsg != "" {
 		data["Error"] = errMsg
 	}
@@ -136,6 +198,11 @@ func (s *Server) addChildSave(w http.ResponseWriter, r *http.Request, siblingMod
 	}
 
 	familyID := formID(r, "family_id")
+
+	// Optional: parents may be edited/created from the form fields.
+	fatherIDResolved, _ := resolveParent(ctx, q, r, "father")
+	motherIDResolved, _ := resolveParent(ctx, q, r, "mother")
+
 	var famID int64
 	if familyID > 0 {
 		if _, err := q.FamilyByID(ctx, familyID); err != nil {
@@ -143,11 +210,36 @@ func (s *Server) addChildSave(w http.ResponseWriter, r *http.Request, siblingMod
 			return
 		}
 		famID = familyID
+		// Apply any parent changes submitted with the form.
+		if fatherIDResolved > 0 || motherIDResolved > 0 {
+			fam, err := q.FamilyByID(ctx, famID)
+			if err != nil {
+				s.renderError(w, r, http.StatusNotFound, s.tr(r, "That family does not exist."))
+				return
+			}
+			if fatherIDResolved > 0 {
+				fam.Partner1ID = &fatherIDResolved
+			}
+			if motherIDResolved > 0 {
+				fam.Partner2ID = &motherIDResolved
+			}
+			if err := q.UpdateFamily(ctx, &fam); err != nil {
+				s.renderError(w, r, http.StatusUnprocessableEntity, "Could not save family: "+err.Error())
+				return
+			}
+		}
 	} else {
-		// Child mode with no existing family: create one with the person as
-		// the sole parent (the other parent can be added later).
+		// Child mode with no existing family: create one with the submitted
+		// parents, falling back to the context person as the sole parent.
 		fam := models.Family{Status: models.FamilyMarried}
-		fam.Partner1ID = &person.ID
+		if fatherIDResolved > 0 {
+			fam.Partner1ID = &fatherIDResolved
+		} else {
+			fam.Partner1ID = &person.ID
+		}
+		if motherIDResolved > 0 {
+			fam.Partner2ID = &motherIDResolved
+		}
 		if famID, err = q.InsertFamily(ctx, &fam); err != nil {
 			s.renderError(w, r, http.StatusUnprocessableEntity, "Could not create family: "+err.Error())
 			return

@@ -1,9 +1,8 @@
 {{template "header" .}}
 <section>
   <h1>{{t $.Lang "People"}} <span class="muted">({{.Total}})</span></h1>
-    <input name="q" value="{{.Query}}" placeholder="{{t $.Lang "Search by name…"}} " autofocus>
-    <input name="q" value="{{.Query}}" placeholder="{{t $.Lang "Search by name…"}} " autofocus>
-    <button type="submit">{{t $.Lang "Search"}}</button>
+  <form method="get" action="/people">
+    <input type="search" name="q" id="people-search" value="{{.Query}}" placeholder="{{t $.Lang "Search by name…"}} " autofocus>
     {{with .Query}}<a class="linklike" href="/people">{{t $.Lang "Clear"}}</a>{{end}}
   </form>
 
@@ -29,4 +28,28 @@
   <p class="muted">{{t $.Lang "No matches."}}</p>
   {{end}}
 </section>
+<script>
+(function () {
+  var input = document.getElementById('people-search');
+  if (!input) return;
+  // Keep the caret at the end after a search-driven page reload.
+  try { input.selectionStart = input.selectionEnd = input.value.length; } catch (e) {}
+  var timer = null;
+  function go() {
+    var q = input.value.trim();
+    window.location.href = '/people?q=' + encodeURIComponent(q);
+  }
+  input.addEventListener('input', function () {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(go, 400);
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      if (timer) clearTimeout(timer);
+      e.preventDefault();
+      go();
+    }
+  });
+})();
+</script>
 {{template "footer" .}}

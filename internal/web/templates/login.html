@@ -1,5 +1,5 @@
 {{template "header" .}}
-<section class="loginbox">
+<section class="loginbox formbox">
   <h1>{{t $.Lang "Log in"}}</h1>
   {{with .Error}}<p class="error">{{t $.Lang .}}</p>{{end}}
   <form method="post" action="/login">
