@@ -145,6 +145,7 @@ var esTranslations = map[string]string{
 	"← newer":         "← más recientes",
 	"older →":         "más antiguas →",
 	"living":          "viva",
+	"aged %s":         "edad %s",
 	"edit":            "editar",
 
 	// Person page
