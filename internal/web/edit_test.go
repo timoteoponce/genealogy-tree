@@ -83,6 +83,34 @@ func TestPersonEditFlow(t *testing.T) {
 	}
 }
 
+func TestPersonEditPrefillsFreeTextDatesAndProfileShowsAge(t *testing.T) {
+	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
+
+	// Imported dates are free text, not ISO: a type="date" input would silently
+	// blank them and wipe them on the next save.
+	status, body := get(t, e.admin, e.ts.URL+"/person/1/edit")
+	if status != http.StatusOK {
+		t.Fatalf("edit page: %d", status)
+	}
+	for _, want := range []string{
+		`name="birth_date" value="1847"`,
+		`name="death_date" value="ABT 1912"`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("edit page missing %q", want)
+		}
+	}
+
+	// John (1847 – ABT 1912) should show an approximate age at death.
+	status, body = get(t, e.admin, e.ts.URL+"/person/1")
+	if status != http.StatusOK {
+		t.Fatalf("profile page: %d", status)
+	}
+	if !strings.Contains(body, "aged ~65") {
+		t.Errorf("profile page missing approximate age; body: %s", body)
+	}
+}
+
 func TestPersonCreateAndRelativesFlow(t *testing.T) {
 	e := newEnv(t, "../../testdata/gedcom/minimal.ged")
 	csrf := csrfFrom(t, e, e.admin, "/people")

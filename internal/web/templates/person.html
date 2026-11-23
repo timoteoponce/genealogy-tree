@@ -4,7 +4,7 @@
     <img class="portrait" src="/person/{{.Person.ID}}/thumb?v=2" alt="" width="128" height="128">
     <div class="pheadinfo">
       <h1>{{.Person.DisplayName}}</h1>
-      <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{if .Person.Living}}· <span class="badge living">{{t $.Lang "living"}}</span>{{end}}</p>
+      <p class="muted">{{.SexLabel}} {{with .Person.Years}}· {{.}}{{end}} {{with .Person.Age}}· {{t $.Lang "aged %s" .}}{{end}} {{if .Person.Living}}· <span class="badge living">{{t $.Lang "living"}}</span>{{end}}</p>
       {{if .CanEdit}}
       <div class="actionrow">
         <a class="btn" href="/person/{{.Person.ID}}/edit">{{t $.Lang "Edit"}}</a>

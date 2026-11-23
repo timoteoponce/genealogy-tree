@@ -4,6 +4,7 @@ package models
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -88,6 +89,46 @@ func (p Person) Years() string {
 
 func trimYear(y int64) string {
 	return strconv.Itoa(int(y))
+}
+
+// Age returns the person's age in years as a display string. Deceased people
+// get their age at death; living people get their age today. An empty string
+// means no reliable age can be computed. An approximate birth or death date
+// (ABT, BET … AND …, etc.) is marked with a leading "~".
+func (p Person) Age() string {
+	if p.BirthYear == nil {
+		return ""
+	}
+	var endYear int64
+	switch {
+	case p.DeathYear != nil:
+		endYear = *p.DeathYear
+	case p.Living:
+		endYear = int64(time.Now().Year())
+	default:
+		return "" // recorded as deceased, but death year is unknown
+	}
+	age := endYear - *p.BirthYear
+	if age < 0 {
+		return ""
+	}
+	s := strconv.FormatInt(age, 10)
+	if isApproximateDate(p.BirthDate) || isApproximateDate(p.DeathDate) {
+		return "~" + s
+	}
+	return s
+}
+
+// isApproximateDate reports whether a GEDCOM-style date carries a qualifier
+// that makes an exact year (and therefore an exact age) uncertain.
+func isApproximateDate(raw string) bool {
+	u := strings.ToUpper(strings.TrimSpace(raw))
+	for _, q := range []string{"ABT", "ABOUT", "BEF", "AFT", "EST", "CAL", "CIRCA", "BET", "FROM", "TO"} {
+		if strings.HasPrefix(u, q+" ") {
+			return true
+		}
+	}
+	return false
 }
 
 // IsLiving recomputes the "living" heuristic: no death recorded and either
